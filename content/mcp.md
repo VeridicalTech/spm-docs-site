@@ -4,7 +4,7 @@ title: MCP server
 
 # MCP server
 
-SPM provides a streamable HTTP MCP server for agent memory:
+SPM-Polaris provides a streamable HTTP MCP server for agent memory:
 
 ```
 https://api.spmos.ai/mcp

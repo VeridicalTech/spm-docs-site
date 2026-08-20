@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Build the SPM documentation site (static, no JS framework).
+"""Build the SPM-Polaris documentation site (static, no JS framework).
 
     docs-site/.venv/bin/python docs-site/build.py
 
 Reads content/*.md (+ front-matter title), renders with the shared page
-shell into dist/. Copy-only assets live in assets/; logo webps are synced
-from web/public so the docs stay on the delivered brand pack.
+shell into dist/. Copy-only assets live in assets/; brand assets are copied
+into the flat dist/assets path used by the shared page template.
 """
 
 from __future__ import annotations
@@ -28,6 +28,10 @@ ROOT = Path(__file__).resolve().parent
 CONTENT = ROOT / "content"
 TEMPLATE = (ROOT / "templates" / "page.html").read_text(encoding="utf-8")
 DIST = ROOT / "dist"
+SYSTEM_NAME = "StellarPath Memory Operating System"
+PRODUCT_NAME = "SPM-Polaris"
+PRODUCT_VERSION = "V3.0.0"
+PRODUCT_RELEASE = f"{PRODUCT_NAME} {PRODUCT_VERSION}"
 # Brand images are vendored here so the docs site builds without the console
 # checkout next to it.
 WEB_PUBLIC = ROOT / "assets" / "logo"
@@ -46,6 +50,8 @@ PAGES = [
     ("benchmarks", "Reference", "Benchmarks"),
     ("faq", "Reference", "FAQ"),
     ("changelog", "Reference", "Changelog"),
+    ("privacy", "Legal", "Privacy Policy"),
+    ("terms", "Legal", "Terms of Service"),
 ]
 
 MD_EXTENSIONS = ["fenced_code", "tables", "toc", "attr_list", "sane_lists"]
@@ -63,6 +69,10 @@ def render_page(slug: str, title: str, body_html: str) -> str:
             nav.append(f'<a class="nav-link {active}" href="{href}">{html.escape(t)}</a>')
     return (
         TEMPLATE.replace("{{TITLE}}", html.escape(title))
+        .replace("{{SYSTEM_NAME}}", html.escape(SYSTEM_NAME))
+        .replace("{{PRODUCT_NAME}}", html.escape(PRODUCT_NAME))
+        .replace("{{PRODUCT_VERSION}}", html.escape(PRODUCT_VERSION))
+        .replace("{{PRODUCT_RELEASE}}", html.escape(PRODUCT_RELEASE))
         .replace("{{NAV}}", "\n".join(nav))
         .replace("{{CONTENT}}", body_html)
     )
@@ -74,7 +84,12 @@ def main() -> None:
     (DIST / "assets").mkdir(parents=True)
 
     shutil.copytree(ROOT / "assets", DIST / "assets", dirs_exist_ok=True)
-    for name in ("orbit_light_upscaled.webp", "orbit-mark-light.webp", "orbit-wordmark-light.webp"):
+    for name in (
+        "orbit_light_upscaled.webp",
+        "orbit-mark-light.webp",
+        "orbit-wordmark-light.webp",
+        "orbit-light-transparent.png",
+    ):
         shutil.copy(WEB_PUBLIC / name, DIST / "assets" / name)
 
     for md_file in sorted(CONTENT.glob("*.md")):

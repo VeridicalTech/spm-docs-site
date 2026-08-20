@@ -4,7 +4,7 @@ title: Plans & quotas
 
 # Plans & quotas
 
-SPM prices only the memory plane. Your models stay on your own provider accounts and are billed by your provider directly — SPM never resells, marks up, or meters generative inference.
+SPM-Polaris prices only the memory plane. Your models stay on your own provider accounts and are billed by your provider directly — SPM-Polaris never resells, marks up, or meters generative inference.
 
 ## Plans
 
@@ -22,7 +22,7 @@ Monthly and yearly SKUs of the same plan unlock identical quotas; the yearly SKU
 
 ## How limits are enforced
 
-- **Rate limit** — a distributed, fail-closed limiter guards the request plane. Exceeding the budget returns `429`; if the limiter itself is unavailable, SPM returns `503 RATE_LIMITER_UNAVAILABLE` instead of silently dropping your limits.
+- **Rate limit** — a distributed, fail-closed limiter guards the request plane. Exceeding the budget returns `429`; if the limiter itself is unavailable, SPM-Polaris returns `503 RATE_LIMITER_UNAVAILABLE` instead of silently dropping your limits.
 - **Monthly memory writes** — each stored memory source counts against the current billing-period allowance. Writes beyond the allowance are rejected with `429` until the period resets or the plan is upgraded.
 - **Stored memories** — the write guard rejects new sources once the plan's stored-memory ceiling is reached. Purging sources frees capacity immediately.
 - **Provider channels** — creating a channel beyond the plan allowance is rejected in the console. Revoking (deleting) a channel frees the slot; revoked channels and keys disappear from console lists entirely.

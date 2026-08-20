@@ -1,4 +1,4 @@
-# SPM Documentation Site (docs.spmos.ai)
+# SPM-Polaris Documentation Site (docs.spmos.ai)
 
 Static documentation builder: Markdown content + a shared page shell, rendered
 to `dist/` by `build.py`. No JS framework.

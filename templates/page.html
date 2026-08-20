@@ -3,19 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{TITLE}} · SPM Docs</title>
+  <title>{{TITLE}} · {{PRODUCT_NAME}} Docs</title>
+  <meta name="description" content="Documentation for {{PRODUCT_RELEASE}}, the hosted provider proxy from {{SYSTEM_NAME}}." />
   <link rel="icon" href="assets/orbit-mark-light.webp" />
   <link rel="stylesheet" href="assets/site.css" />
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="index.html">
-      <img src="assets/orbit-mark-light.webp" alt="SPM" class="brand-mark" />
-      <span class="brand-text">
-        <img src="assets/orbit-wordmark-light.webp" alt="SPM" class="brand-word" />
-        <span class="brand-sub">StellarPath Memory System</span>
-      </span>
-      <span class="brand-tag">Docs</span>
+      <img src="assets/orbit-light-transparent.png" alt="SPM — StellarPath Memory Operating System" class="brand-lockup" />
+      <span class="brand-tag">Docs · {{PRODUCT_VERSION}}</span>
     </a>
     <nav class="topnav">
       <a href="https://spmos.ai">Back to Home</a>
@@ -32,8 +29,41 @@
     <main class="content reveal">
       {{CONTENT}}
       <footer class="page-footer">
-        <span>SPM · StellarPath Memory</span>
-        <span>hosted · provider proxy + MCP</span>
+        <div class="page-footer-brand">
+          <span class="page-footer-statement">Long-term memory built to create value.</span>
+          <span class="page-footer-release">{{PRODUCT_RELEASE}} · Provider Proxy · MCP</span>
+          <span>SPM is a product of Veridical Tech, Inc., a Delaware C corporation.</span>
+          <span>© 2026 Veridical Tech, Inc. All rights reserved.</span>
+        </div>
+        <div class="page-footer-actions">
+          <nav class="page-footer-links" aria-label="Footer navigation">
+            <a href="https://spmos.ai">Home</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Terms</a>
+          </nav>
+          <nav class="official-links" aria-label="Official channels">
+            <a class="official-link" href="https://x.com/SPMOSai" target="_blank" rel="noreferrer" aria-label="X" title="X">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><use href="assets/social-icons.svg#x"></use></svg>
+              <span class="channel-label" aria-hidden="true">X</span>
+            </a>
+            <a class="official-link" href="https://github.com/VeridicalTech" target="_blank" rel="noreferrer" aria-label="GitHub" title="GitHub">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><use href="assets/social-icons.svg#github"></use></svg>
+              <span class="channel-label" aria-hidden="true">GitHub</span>
+            </a>
+            <a class="official-link" href="https://huggingface.co/spmos" target="_blank" rel="noreferrer" aria-label="Hugging Face" title="Hugging Face">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><use href="assets/social-icons.svg#huggingface"></use></svg>
+              <span class="channel-label" aria-hidden="true">Hugging Face</span>
+            </a>
+            <a class="official-link" href="https://www.youtube.com/@SPMOSai" target="_blank" rel="noreferrer" aria-label="YouTube" title="YouTube">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><use href="assets/social-icons.svg#youtube"></use></svg>
+              <span class="channel-label" aria-hidden="true">YouTube</span>
+            </a>
+            <a class="official-link" href="https://www.reddit.com/user/SPMOS/" target="_blank" rel="noreferrer" aria-label="Reddit" title="Reddit">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><use href="assets/social-icons.svg#reddit"></use></svg>
+              <span class="channel-label" aria-hidden="true">Reddit</span>
+            </a>
+          </nav>
+        </div>
       </footer>
     </main>
   </div>

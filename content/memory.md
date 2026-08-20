@@ -9,11 +9,11 @@ title: Memory, evidence & deletion
 Memory enters through two paths:
 
 - **Explicit writes** — the MCP `remember` tool or the console, stored idempotently under your account scope with an idempotency key.
-- **Automatic ingest** — after each proxied provider exchange, SPM projects the conversation, strips control scaffolding, filters probe/scaffold echo, and queues an extraction job.
+- **Automatic ingest** — after each proxied provider exchange, SPM-Polaris projects the conversation, strips control scaffolding, filters probe/scaffold echo, and queues an extraction job.
 
 Extraction jobs are idempotent (a replayed exchange is a no-op), retried with backoff, and dead-lettered after exhausting attempts. Slow or failed ingestion never breaks a live request — the outbox drains when workers return.
 
-At write time each memory receives an origin role on the **provenance ladder**: `user`, `assistant`, `mixed` (a fragment spanning a role boundary, downgraded rather than guessed), or `derived` (SPM-synthesized state). Conflicts resolve by authority rank: a user's statement outranks an assistant's proposal, and an assistant cannot promote its own claims to user authority.
+At write time each memory receives an origin role on the **provenance ladder**: `user`, `assistant`, `mixed` (a fragment spanning a role boundary, downgraded rather than guessed), or `derived` (SPM-Polaris-synthesized state). Conflicts resolve by authority rank: a user's statement outranks an assistant's proposal, and an assistant cannot promote its own claims to user authority.
 
 ## How recall answers
 

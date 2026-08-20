@@ -4,7 +4,7 @@ title: Changelog
 
 # Changelog
 
-## 2026-08-19
+## 2026-08-19 — SPM-Polaris V3.0.0
 
 ### Added
 - **Plans & quotas enforced end to end** — Free, Starter ($9/mo `·` $99/yr), and Growth ($15/mo `·` $150/yr) now enforce rate limits, monthly memory-write allowances, stored-memory ceilings, and provider-channel counts. Usage progress bars live on the console Dashboard.
@@ -15,6 +15,7 @@ title: Changelog
 - **Recall transparency** — the console Recall view surfaces gate reason and evidence count per attempt; receipts carry original vs forwarded vs recalled token accounting.
 
 ### Changed
+- Product identity is now explicit: **SPM** is the StellarPath Memory Operating System brand, **SPM-Polaris** is the hosted provider-proxy product, and **V3.0.0** is the current public release.
 - Revoking an API key or provider channel now deletes it — revoked items no longer linger in console lists.
 - Account closure runs as a fully tracked pipeline: sync fence, purge, verify-absence, credential revocation, reservation drain, financial review, finalize.
 
@@ -35,7 +36,7 @@ title: Changelog
 - **Idempotent vector upsert** — Re-extraction heals through verified overwrite instead of failing terminally.
 
 ### Changed
-- Product naming normalized to **SPM (StellarPath Memory)**; the former product suffix remains a sub-version codename.
+- Product naming was temporarily shortened to **SPM (StellarPath Memory)**. This naming decision was superseded by the explicit **SPM-Polaris V3.0.0** product identity on 2026-08-19.
 - Documentation site launched; the console and landing page moved to the English-only cold monochrome design system.
 
 ## 2026-07-29 — 0.1.0

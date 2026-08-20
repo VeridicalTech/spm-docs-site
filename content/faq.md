@@ -4,11 +4,11 @@ title: FAQ
 
 # FAQ
 
-**Is SPM open source or self-hosted?**
-No. SPM is a hosted service accessed through the provider proxy or MCP. It requires no customer-side deployment.
+**Is SPM-Polaris open source or self-hosted?**
+No. SPM-Polaris is a hosted service accessed through the provider proxy or MCP. It requires no customer-side deployment.
 
 **Do I have to move my models?**
-No. Models remain in your provider accounts — OpenAI, Anthropic, DeepSeek, OpenRouter, Groq, Mistral, xAI, Together AI, Fireworks AI, Moonshot AI, Alibaba DashScope, Azure OpenAI, or any custom endpoint speaking a supported dialect. SPM forwards requests in each provider's native format.
+No. Models remain in your provider accounts — OpenAI, Anthropic, DeepSeek, OpenRouter, Groq, Mistral, xAI, Together AI, Fireworks AI, Moonshot AI, Alibaba DashScope, Azure OpenAI, or any custom endpoint speaking a supported dialect. SPM-Polaris forwards requests in each provider's native format.
 
 **Can I use a provider that is not in the preset list?**
 Yes. A custom channel accepts any OpenAI-compatible or Anthropic Messages endpoint: you control the base URL, API style, model name, and key. The Test connection button validates the credential against the live model list before saving.
@@ -16,7 +16,7 @@ Yes. A custom channel accepts any OpenAI-compatible or Anthropic Messages endpoi
 **How current is the model list?**
 The catalog aggregates the MIT-licensed models.dev dataset, refreshes automatically (12-hour TTL with stale-while-revalidate), and falls back to a bundled snapshot. The channel form labels the catalog as live, live-stale, or bundled with its fetch time.
 
-**Does SPM add LLM calls to my requests?**
+**Does SPM-Polaris add LLM calls to my requests?**
 No. Recall, ranking, admission, and compression are deterministic code. Provider charges cover inference only; memory growth does not add inference tokens.
 
 **What happens when there is no relevant memory?**

@@ -1,12 +1,12 @@
 ---
-title: SPM Documentation
+title: SPM-Polaris Documentation
 ---
 
-# SPM Documentation
+# SPM-Polaris Documentation
 
-**SPM (StellarPath Memory)** is memory and context infrastructure for AI agents, delivered as a hosted provider proxy with a governed long-term memory plane. You point any OpenAI- or Anthropic-compatible client at the SPM endpoint and keep your existing LLM provider account; every request then gains evidence-gated recall, deterministic context compression, and a signed audit trail — with no generative LLM call added to the memory path.
+**SPM** is the StellarPath Memory Operating System brand. **SPM-Polaris** is its hosted provider-proxy product; the current public release is **V3.0.0**. You point any OpenAI- or Anthropic-compatible client at the SPM endpoint and keep your existing LLM provider account; every request then gains evidence-gated recall, deterministic context compression, and a signed audit trail — with no generative LLM call added to the memory path.
 
-SPM is a **hosted service**. There is no appliance or self-deployment: you integrate through the provider proxy or the MCP server while we operate the memory plane.
+SPM-Polaris is a **hosted service**. There is no appliance or self-deployment: you integrate through the provider proxy or the MCP server while we operate the memory plane.
 
 ## Two doors in
 
@@ -17,7 +17,7 @@ SPM is a **hosted service**. There is no appliance or self-deployment: you integ
 
 Both doors accept the same `spm_live_...` API key and enforce the same tenancy, quota, and evidence-gate rules.
 
-## What SPM does inside a request
+## What SPM-Polaris does inside a request
 
 1. **Authenticates** your API key and resolves your tenant, namespace, policy, and provider channel.
 2. **Recalls** relevant memory through lexical and vector legs, fused and admitted through an evidence gate. If nothing qualifies, the gate fails closed instead of guessing.

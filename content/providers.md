@@ -4,7 +4,7 @@ title: Bring your own provider
 
 # Bring your own provider
 
-SPM does not meter inference. Models run on your provider accounts; SPM operates the surrounding memory plane and forwards requests in each provider's native dialect.
+SPM-Polaris does not meter inference. Models run on your provider accounts; SPM-Polaris operates the surrounding memory plane and forwards requests in each provider's native dialect.
 
 ## Supported dialects
 
@@ -42,14 +42,14 @@ Azure OpenAI works through a custom channel: paste the full deployment URL as th
 
 Choose **Custom** to connect any endpoint that speaks one of the supported dialects — a self-hosted vLLM/Ollama gateway, a regional provider, or an enterprise proxy. You keep full control of every parameter:
 
-- **Base URL** — the exact upstream root SPM forwards to
+- **Base URL** — the exact upstream root SPM-Polaris forwards to
 - **API style** — OpenAI-compatible or Anthropic Messages; pick the dialect the endpoint actually speaks
 - **Model** — any model name the endpoint serves, typed directly or picked from the probed list
 - **API key** — vaulted like any preset credential
 
 Custom channels are first-class: they get the same memory plane, the same receipts, and the same quota accounting as preset channels.
 
-Outbound calls from SPM are guarded: HTTPS-only transport, DNS resolution pinned to global addresses (SSRF protection), and response size/time caps. The same guardrails apply when the console probes a connection.
+Outbound calls from SPM-Polaris are guarded: HTTPS-only transport, DNS resolution pinned to global addresses (SSRF protection), and response size/time caps. The same guardrails apply when the console probes a connection.
 
 ## The live model catalog
 
@@ -58,7 +58,7 @@ Model pickers are fed by a live catalog aggregated from the MIT-licensed [models
 - The catalog refreshes automatically (12-hour TTL with stale-while-revalidate) and falls back to a bundled snapshot if the upstream is unreachable.
 - Each channel form labels the catalog state — **live**, **live-stale** (serving the last good fetch), or **bundled** — with its fetch time, so you always know how fresh the list is.
 - Models carry badges for context window, max output tokens, input/output price per million tokens, and reasoning / tool-calling capability where the catalog reports them.
-- New providers that appear in the upstream dataset enter the catalog for review; they never bypass SPM's transport, SSRF, data-retention, or cost review automatically.
+- New providers that appear in the upstream dataset enter the catalog for review; they never bypass SPM-Polaris transport, SSRF, data-retention, or cost review automatically.
 
 ## Test connection
 
@@ -77,7 +77,7 @@ your key -> tenant + channel resolution -> memory recall
          -> streaming response -> async ingest -> signed receipt
 ```
 
-Recall and forwarding are separate stages. The provider does not control what SPM remembers, ranks, admits, or compresses.
+Recall and forwarding are separate stages. The provider does not control what SPM-Polaris remembers, ranks, admits, or compresses.
 
 ## Provider failures
 
@@ -85,6 +85,6 @@ An upstream error maps to a standard provider-shaped error with the upstream sta
 
 ## Cost model
 
-- **You pay your provider** for inference as before — reduced by whatever context SPM's compression removes before forwarding.
-- **You pay SPM** a flat plan price for the memory plane ([Plans & quotas](plans.html)).
-- SPM's extraction, recall ranking, and compression are deterministic code and add nothing to an inference bill.
+- **You pay your provider** for inference as before — reduced by whatever context SPM-Polaris compression removes before forwarding.
+- **You pay for SPM-Polaris** at a flat plan price for the memory plane ([Plans & quotas](plans.html)).
+- SPM-Polaris extraction, recall ranking, and compression are deterministic code and add nothing to an inference bill.

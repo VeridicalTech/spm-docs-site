@@ -1,4 +1,4 @@
-/* SPM Docs — cold monochrome, aligned with the landing design system. */
+/* SPM-Polaris Docs — cold monochrome, aligned with the SPM design system. */
 
 :root {
   --bg: #ffffff;
@@ -39,19 +39,13 @@ body {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(8px);
 }
-.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
-.brand-mark { height: 26px; width: 26px; object-fit: contain; }
-.brand-word { height: 18px; width: auto; object-fit: contain; }
-.brand-text { display: inline-flex; flex-direction: column; justify-content: center; }
-.brand-sub {
-  font-family: var(--mono);
-  /* 5px keeps the subtitle inside the wordmark width above (25 chars x
-     0.6em ≈ 75px vs ~76px wordmark). */
-  font-size: 5px;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-top: 1px;
+.brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand-lockup {
+  display: block;
+  width: auto;
+  height: 44px;
+  object-fit: contain;
+  object-position: left center;
 }
 .brand-tag {
   font-family: var(--mono);
@@ -229,13 +223,110 @@ blockquote {
 .page-footer {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
   margin-top: 64px;
-  padding-top: 18px;
+  padding-top: 24px;
   border-top: 1px solid var(--border);
   font-family: var(--mono);
   font-size: 11px;
   color: var(--faint);
 }
+
+.page-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 430px;
+  line-height: 1.55;
+}
+
+.page-footer-statement {
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 13px;
+}
+
+.page-footer-release {
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.page-footer-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.page-footer-links {
+  display: flex;
+  gap: 18px;
+}
+
+.page-footer-links a {
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.page-footer-links a:hover,
+.page-footer-links a:focus-visible { color: var(--fg); }
+
+.official-links {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.official-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.official-link:hover,
+.official-link:focus-visible {
+  background: var(--surface);
+  outline: none;
+}
+
+.official-link svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.channel-label {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 2;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--fg);
+  color: var(--bg);
+  font-family: var(--sans);
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 0.15s ease;
+}
+
+.official-link:hover .channel-label,
+.official-link:focus-visible .channel-label { opacity: 1; }
 
 @media (max-width: 900px) {
   .shell { grid-template-columns: 1fr; }
@@ -248,6 +339,9 @@ blockquote {
   }
   .content { padding: 28px 24px 64px; }
   .topnav { display: none; }
+  .page-footer { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .page-footer-actions { align-items: flex-start; }
+  .official-links { justify-content: flex-start; }
 }
 
 @media (prefers-reduced-motion: reduce) {

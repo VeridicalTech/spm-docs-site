@@ -6,7 +6,7 @@ title: Authentication & API keys
 
 ## The one credential your agents need
 
-Agents authenticate to SPM with a single API key. They never receive your console session or provider keys:
+Agents authenticate to SPM-Polaris with a single API key. They never receive your console session or provider keys:
 
 ```
 Authorization: Bearer spm_live_...
@@ -44,4 +44,4 @@ After console sign-in, the web backend issues short-lived capability tokens for 
 
 - Create one key per agent or environment; revoking a key deletes it — revoked keys no longer appear in console lists and immediately stop authenticating.
 - Rotate keys on suspicion; frequent rotation has no usage penalty.
-- Never commit keys. SPM rejects malformed keys promptly, but a committed `spm_live` key remains live until revoked.
+- Never commit keys. SPM-Polaris rejects malformed keys promptly, but a committed `spm_live` key remains live until revoked.

@@ -6,7 +6,7 @@ title: Architecture
 
 ## One sentence
 
-SPM is a provider proxy with a governed memory plane. Agents send requests to `api.spmos.ai`; SPM handles memory around each request, and the configured provider serves the inference.
+SPM-Polaris V3.0.0 is a provider proxy with a governed memory plane. Agents send requests to `api.spmos.ai`; SPM-Polaris handles memory around each request, and the configured provider serves the inference.
 
 ## Two planes
 

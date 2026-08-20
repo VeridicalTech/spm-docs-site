@@ -4,7 +4,9 @@ title: Benchmarks
 
 # Benchmarks
 
-These are first-party results from our own harnesses and frozen-anchor runs — the same evidence class as vendor self-reports. We report bands rather than best runs and exclude degraded-validity runs from anchors. Scorecard date: 2026-08-16. Early runs predate our launch-manifest discipline, so their full argv/commit records are not all preserved; every new anchor run publishes a complete launch manifest (argv, commit SHA, worktree state, model and endpoint pins).
+Current product release: **SPM-Polaris V3.0.0**.
+
+These are first-party SPM-Polaris results from our own harnesses and frozen-anchor runs — the same evidence class as vendor self-reports. We report bands rather than best runs and exclude degraded-validity runs from anchors. Scorecard date: 2026-08-16. Early runs predate both V3.0.0 and our launch-manifest discipline, so their full argv/commit records are not all preserved and they are not relabeled as V3.0.0 results; every new anchor run publishes a complete launch manifest (argv, commit SHA, worktree state, model and endpoint pins).
 
 ## Headline
 
