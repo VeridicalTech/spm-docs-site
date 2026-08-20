@@ -20,6 +20,8 @@ When an organization uses the Service to process prompts, conversations, memorie
 
 We collect information used to create and administer accounts, organizations, tenants, and access rights, such as name, email address, account identifiers, organization membership, roles, and authentication events.
 
+If you choose Sign in with Google, we may receive basic account information made available by Google, such as your name, email address, Google account identifier, and profile image when available. We use this information only for authentication, account creation or linking, security, and account administration. We do not request access to Gmail, Google Drive, Google Contacts, or Google Calendar.
+
 ### Customer Content
 
 We process information submitted to the Service, including prompts, conversations, source text, memory records, retrieved evidence, deletion instructions, configuration, and related metadata ("Customer Content"). The content and sensitivity of Customer Content are controlled by the customer.
