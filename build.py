@@ -56,6 +56,16 @@ PAGES = [
 ]
 
 MD_EXTENSIONS = ["fenced_code", "tables", "toc", "attr_list", "sane_lists"]
+VERSIONED_SCOPED_PACKAGE = re.compile(
+    r"(?<![A-Za-z0-9_.-])(@[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[A-Za-z0-9_.+-]+)"
+)
+
+
+def protect_versioned_package_names(body_html: str) -> str:
+    """Prevent Cloudflare from treating scoped package versions as email addresses."""
+    return VERSIONED_SCOPED_PACKAGE.sub(
+        r"<!--email_off-->\1<!--/email_off-->", body_html
+    )
 
 
 def render_page(slug: str, title: str, body_html: str) -> str:
@@ -101,7 +111,9 @@ def main() -> None:
             match = re.search(r"^title:\s*(.+)$", fm, re.M)
             if match:
                 title = match.group(1).strip()
-        body = markdown.markdown(raw, extensions=MD_EXTENSIONS)
+        body = protect_versioned_package_names(
+            markdown.markdown(raw, extensions=MD_EXTENSIONS)
+        )
         slug = md_file.stem
         (DIST / f"{slug}.html").write_text(render_page(slug, title, body), encoding="utf-8")
         print(f"  {slug}.html")
