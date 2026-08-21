@@ -1,4 +1,4 @@
-# SPM-Polaris Documentation Site (docs.spmos.ai)
+# SPM Documentation Site (docs.spmos.ai)
 
 Static documentation builder: Markdown content + a shared page shell, rendered
 to `dist/` by `build.py`. No JS framework.
@@ -20,3 +20,7 @@ python3 -m venv .venv
 
 Deploy target: Cloudflare Pages project `spmos-docs` (custom domain
 `docs.spmos.ai`), production branch `main`.
+
+Public product language is English-only. Operational hostnames, credentials,
+private network details, rollback paths, and internal-only benchmark artifacts
+belong in the private handover, not in this public repository.

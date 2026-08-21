@@ -4,41 +4,50 @@ title: FAQ
 
 # FAQ
 
-**Is SPM-Polaris open source or self-hosted?**
-No. SPM-Polaris is a hosted service accessed through the provider proxy or MCP. It requires no customer-side deployment.
+## Is SPM self-hosted?
+The SPM memory plane is hosted. Local Proxy is an optional local provider-traffic component, not a self-hosted or offline edition of SPM.
 
-**Do I have to move my models?**
-No. Models remain in your provider accounts — OpenAI, Anthropic, DeepSeek, OpenRouter, Groq, Mistral, xAI, Together AI, Fireworks AI, Moonshot AI, Alibaba DashScope, Azure OpenAI, or any custom endpoint speaking a supported dialect. SPM-Polaris forwards requests in each provider's native format.
+## Must SPM store my provider key?
+No. Hosted Provider Proxy vaults it in SPM. Local Proxy keeps it in a protected local config and sends it directly to the configured upstream.
 
-**Can I use a provider that is not in the preset list?**
-Yes. A custom channel accepts any OpenAI-compatible or Anthropic Messages endpoint: you control the base URL, API style, model name, and key. The Test connection button validates the credential against the live model list before saving.
+## What data still reaches SPM when I use Local Proxy?
+Recall queries, admitted memory responses, and eligible captured text use hosted SPM according to memory mode. The full provider request is sent directly to the provider, not through the hosted Provider Proxy.
 
-**How current is the model list?**
-The catalog aggregates the MIT-licensed models.dev dataset, refreshes automatically (12-hour TTL with stale-while-revalidate), and falls back to a bundled snapshot. The channel form labels the catalog as live, live-stale, or bundled with its fetch time.
+## Who selects the model?
+The request or downstream harness. Hosted SPM routes that model against the configuration's allowed models. Local Proxy does not select, alias, or rewrite it.
 
-**Does SPM-Polaris add LLM calls to my requests?**
-No. Recall, ranking, admission, and compression are deterministic code. Provider charges cover inference only; memory growth does not add inference tokens.
+## Why can one provider configuration contain multiple models?
+The credential, Base URL, API style, headers, and query parameters belong to the upstream configuration. Model is request routing, so a second row is needed only for a different upstream configuration.
 
-**What happens when there is no relevant memory?**
-The evidence gate fails closed and returns an explicit UNKNOWN with a machine-readable gate reason, visible in the console Recall view together with the evidence count.
+## Which providers can fetch models?
+Only Custom BYO channels use a guarded live `/models` probe. Preset providers use the reviewed models.dev-backed catalog.
 
-**What are the plan limits?**
-Free: 10 req/min, 500 writes/month, 1,000 stored memories, 1 provider channel. Starter ($9/mo or $99/yr): 30 req/min, 3,000 writes, 10,000 memories, 3 channels. Growth ($15/mo or $150/yr): 100 req/min, 8,000 writes, 50,000 memories, 10 channels. Full detail: [Plans & quotas](plans.html).
+## Why does `GET /v1/models` fail through Local Proxy?
+Local Proxy relays the route to the upstream. It does not synthesize a list from models.dev, so the upstream must expose that route.
 
-**What happens when I hit a limit?**
-The operation is rejected with `429` — never silently converted into a charge. There is no automatic overage. Upgrade in the console under Billing, or purge sources to free stored-memory capacity.
+## Why does `spm doctor` pass while a live request fails?
+`spm doctor` validates local schema, listener, and API-style ownership. It does not prove SPM key scopes, provider credentials, upstream model access, port availability, or a complete request.
 
-**Can I delete my data?**
-Yes — per source (MCP `delete` or targeted purge), all memory (Clear memory), or the entire account (Close account). Multi-step deletions run as a tracked pipeline with a verify-absence gate, and every completed purge produces an HMAC-SHA256 signed receipt that survives key rotation. Two caveats remain: records created before signed receipts are unsigned, and pre-purge backups age out on their own schedule. Cryptographic erasure through per-tenant key destruction is on the roadmap.
+## Why does a request show 0% reduction?
+The history must exceed the active budget and contain a complete old exchange that is safe to remove. Short, single-turn, or protected tool/reasoning/thinking histories can correctly show 0%.
 
-**Can another tenant ever see my memory?**
-No. Every object carries a tenant id. Row-level security, namespace fences, signed tokens with replay protection, and a final evidence-gate recheck at render time enforce isolation.
+## Does SPM remove reasoning or tool state?
+No. Provider reasoning, Anthropic thinking/redacted thinking, tool/function arguments, event order, and identifiers are protected from compression and relayed unchanged. They are excluded from memory capture.
 
-**What providers does the proxy speak?**
-OpenAI Chat Completions, OpenAI Responses, and Anthropic Messages, each without cross-dialect rewriting.
+## Why is recall `answer` not a polished entity answer?
+It is the highest-priority admitted evidence item, not an LLM-generated synthesis. Use `evidence_refs` and `read` for exact provenance; let the downstream agent phrase the final answer.
 
-**What if the console is down?**
-Traffic continues because the request plane does not depend on the console plane. Configured API keys keep authenticating.
+## Where are Local Proxy receipts shown?
+Local Proxy exposes per-request `x-spm-*` headers. It does not currently create hosted gateway receipts or populate hosted Dashboard savings/receipt views.
 
-**Where are the numbers from?**
-The [Benchmarks](benchmarks.html) page provides the scorecard, evidence annotations, and methodology.
+## Does SPM add a generative model call to recall?
+No generative answer model is added to the recall path. Evidence admission and best-evidence rendering are deterministic.
+
+## What happens when no memory qualifies?
+Recall fails closed with an explicit empty/refused state and gate reason. It does not invent supporting memory.
+
+## Can I delete my data?
+Yes: delete one source, Clear memory for tenant history, or Close account. Active-store deletion is verified; pre-existing backups/WAL/replicas expire on their retention schedule.
+
+## Can another tenant see my memory?
+Tenant IDs, row-level security, namespace/generation fences, signed tokens, and final evidence-gate checks prevent cross-tenant recall.

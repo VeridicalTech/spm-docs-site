@@ -4,87 +4,73 @@ title: Bring your own provider
 
 # Bring your own provider
 
-SPM-Polaris does not meter inference. Models run on your provider accounts; SPM-Polaris operates the surrounding memory plane and forwards requests in each provider's native dialect.
+SPM does not resell model inference. You keep an upstream provider account and choose one of two credential-custody models.
 
-## Supported dialects
+## Credential custody
 
-The gateway natively proxies three API dialects:
+| | Hosted Provider Proxy | Local Proxy |
+|---|---|---|
+| Provider key storage | Encrypted SPM vault | Protected local config |
+| Model request path | Client → SPM → provider | Client → loopback Local Proxy → provider |
+| SPM memory path | Hosted | Hosted |
+| Hosted gateway receipts | Yes | No |
+| Model selection | Request model routed against allowed models | Downstream harness sends the model |
 
-| Dialect | Endpoint | Typical providers |
-|---------|----------|-------------------|
-| OpenAI Chat Completions | `POST /v1/chat/completions` | OpenAI, DeepSeek, Azure OpenAI, most compatible APIs |
-| OpenAI Responses | `POST /v1/responses` | OpenAI Responses-API models |
-| Anthropic Messages | `POST /v1/messages` | Anthropic Claude and compatible endpoints |
+Neither path is universally safer. Hosted forwarding centralizes operations and receipts. Local Proxy reduces provider-key disclosure to SPM but adds local configuration and process-security responsibilities.
 
-There is no translation loss between dialects. An Anthropic-format request is projected for memory work, then forwarded to an Anthropic-compatible upstream in its native format — never rewritten through OpenAI's dialect.
+## Native API styles
 
-## Provider presets
+| API style | Endpoint |
+|-----------|----------|
+| OpenAI Chat Completions | `POST /v1/chat/completions` |
+| OpenAI Responses | `POST /v1/responses` |
+| Anthropic Messages | `POST /v1/messages` |
 
-The console ships presets for the major providers. A preset pre-fills the base URL, the API style, and direct links to the provider's key page and documentation, so adding a channel is usually just pasting a key and picking a model:
+SPM is not a cross-dialect translator. Requests and provider responses stay in the configured native style.
 
-| Preset | API style |
-|--------|-----------|
-| OpenAI | OpenAI-compatible |
-| Anthropic | Anthropic Messages |
-| DeepSeek | OpenAI-compatible |
-| OpenRouter | OpenAI-compatible |
-| Groq | OpenAI-compatible |
-| Mistral | OpenAI-compatible |
-| xAI | OpenAI-compatible |
-| Together AI | OpenAI-compatible |
-| Fireworks AI | OpenAI-compatible |
-| Moonshot AI | OpenAI-compatible |
-| Alibaba DashScope | OpenAI-compatible |
+## Hosted provider configurations
 
-Azure OpenAI works through a custom channel: paste the full deployment URL as the base URL.
+One active provider configuration represents one upstream Base URL, credential, API style, custom-header/query set, default model, and `allowed_models[]`.
 
-## Custom endpoints
+- A request with an explicit model routes to the configuration that owns that model.
+- A request without a model uses the default channel/model for that API style.
+- Two active configurations under the same tenant and API style cannot claim the same model.
+- One upstream configuration can serve multiple models; do not create a new provider row solely to change model.
 
-Choose **Custom** to connect any endpoint that speaks one of the supported dialects — a self-hosted vLLM/Ollama gateway, a regional provider, or an enterprise proxy. You keep full control of every parameter:
+## Presets and models.dev
 
-- **Base URL** — the exact upstream root SPM-Polaris forwards to
-- **API style** — OpenAI-compatible or Anthropic Messages; pick the dialect the endpoint actually speaks
-- **Model** — any model name the endpoint serves, typed directly or picked from the probed list
-- **API key** — vaulted like any preset credential
+Preset provider model choices come from the reviewed models.dev-backed catalog. The catalog refreshes with stale-while-revalidate and a bundled fallback.
 
-Custom channels are first-class: they get the same memory plane, the same receipts, and the same quota accounting as preset channels.
+Discovery is not transport approval. A provider appearing in models.dev does not automatically bypass SPM's HTTPS, SSRF, data-retention, protocol, or cost review.
 
-Outbound calls from SPM-Polaris are guarded: HTTPS-only transport, DNS resolution pinned to global addresses (SSRF protection), and response size/time caps. The same guardrails apply when the console probes a connection.
+Preset providers do **not** live-fetch `/models`. This keeps the catalog stable and avoids provider-specific permission/cost surprises.
 
-## The live model catalog
+## Custom BYO
 
-Model pickers are fed by a live catalog aggregated from the MIT-licensed [models.dev](https://models.dev) dataset, not a static list baked into a release:
+Use **Custom** for a self-hosted gateway, regional provider, enterprise proxy, or provider not covered by a preset.
 
-- The catalog refreshes automatically (12-hour TTL with stale-while-revalidate) and falls back to a bundled snapshot if the upstream is unreachable.
-- Each channel form labels the catalog state — **live**, **live-stale** (serving the last good fetch), or **bundled** — with its fetch time, so you always know how fresh the list is.
-- Models carry badges for context window, max output tokens, input/output price per million tokens, and reasoning / tool-calling capability where the catalog reports them.
-- New providers that appear in the upstream dataset enter the catalog for review; they never bypass SPM-Polaris transport, SSRF, data-retention, or cost review automatically.
+You configure:
 
-## Test connection
+- HTTPS Base URL
+- `openai_compatible` or `anthropic_messages` API style
+- provider key
+- default model and allowed models
+- optional custom headers and query parameters
 
-The channel form's **Test connection** button validates the credential against the provider's live model list before you save — with the same SSRF guardrails as production traffic. A successful probe returns the models the key can actually see, which also powers manual model entry for custom endpoints.
+Only Custom channels can use **Fetch models**. For an existing channel, the server-only BFF reads the credential temporarily from the vault, performs the guarded probe, and returns model identifiers—not the credential—to the browser.
 
-## Channel limits
+Custom probes and forwarding enforce HTTPS and public-address DNS pinning. SPM, cookie, forwarding, Cloudflare/client-IP, and hop-by-hop headers are removed after caller and custom headers are merged; provider authentication is injected last.
 
-Channels per plan: **Free 1 · Starter 3 · Growth 10 · Enterprise reviewed**. Deleting a channel frees its slot immediately.
+## Protocol transparency
 
-## What happens per request
+Unknown provider JSON fields and valid diagnostic headers pass through by default. Responses SSE event order and response/item/part IDs are not rebuilt. Anthropic thinking and OpenAI reasoning state stay in provider traffic.
 
-```
-your key -> tenant + channel resolution -> memory recall
-         -> evidence gate -> deterministic compression
-         -> provider forwarding (native dialect)
-         -> streaming response -> async ingest -> signed receipt
-```
+The separate memory observer captures only visible assistant text. Reasoning, thinking, redacted thinking, function/tool arguments, and partial JSON are not written as memory.
 
-Recall and forwarding are separate stages. The provider does not control what SPM-Polaris remembers, ranks, admits, or compresses.
+## Revocation and limits
 
-## Provider failures
+Revoking a key or provider configuration removes it from the console and stops it from authenticating or routing. Provider-channel limits are enforced by plan; deleting a provider frees its slot.
 
-An upstream error maps to a standard provider-shaped error with the upstream status, so your existing retry logic keeps working. A provider outage affects only requests through that channel; the memory plane and your other channels remain available.
+## Provider retention and training
 
-## Cost model
-
-- **You pay your provider** for inference as before — reduced by whatever context SPM-Polaris compression removes before forwarding.
-- **You pay for SPM-Polaris** at a flat plan price for the memory plane ([Plans & quotas](plans.html)).
-- SPM-Polaris extraction, recall ranking, and compression are deterministic code and add nothing to an inference bill.
+The upstream provider's own retention, training opt-out, regional-processing, and account settings apply to model traffic. SPM cannot change those settings for you. Review the provider's terms before sending sensitive content.

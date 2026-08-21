@@ -1,84 +1,110 @@
 ---
-title: Provider proxy API
+title: Provider Proxy API
 ---
 
-# Provider proxy API
+# Provider Proxy API
 
 Base URL: `https://api.spmos.ai`
 
-All endpoints except health probes require `Authorization: Bearer spm_live_...` (or `x-api-key` for the Anthropic dialect).
+Hosted model endpoints authenticate with `Authorization: Bearer spm_live_...`; Anthropic clients may use the same SPM key in `x-api-key`.
 
-## Chat Completions
+## Endpoints
 
-`POST /v1/chat/completions` — a drop-in endpoint for the OpenAI Chat Completions API.
+| Endpoint | Dialect |
+|----------|---------|
+| `POST /v1/chat/completions` | OpenAI Chat Completions |
+| `POST /v1/responses` | OpenAI Responses |
+| `POST /v1/messages` | Anthropic Messages |
 
-```json
-{
-  "model": "deepseek-chat",
-  "messages": [{"role": "user", "content": "What did we decide about the deploy window?"}],
-  "stream": true
-}
+Provider JSON and SSE bytes are relayed in their native dialect. Unknown fields, event ordering, reasoning/tool state, and provider identifiers are not normalized through another protocol.
+
+## Scope-derived memory defaults
+
+Without an override, the SPM key selects its strongest authorized memory mode:
+
+| Key scopes | Default memory mode |
+|------------|---------------------|
+| read + write | `read-write` |
+| read only | `read` |
+| write only | `write` |
+| neither | `off` |
+
+Lower the mode per request:
+
+```text
+x-spm-memory-mode: off | read | write | read-write
 ```
 
-Streaming passes provider chunks through as they are emitted while SPM-Polaris observes usage and completion in parallel. Tool calling and provider-specific parameters pass through unmodified.
+A header cannot upgrade beyond the key's scopes.
 
-## Responses
+## Compression modes
 
-`POST /v1/responses` — OpenAI Responses API dialect.
+```text
+x-spm-compression-mode: passthrough | shadow | deterministic
+```
 
-## Messages
+| Mode | Provider input |
+|------|----------------|
+| `passthrough` | Original request, plus recalled context when memory read succeeds |
+| `shadow` | Original request unchanged; SPM measures the eligible compression result for observability |
+| `deterministic` | Safely removable complete old exchanges may be removed and admitted recall may be inserted |
 
-`POST /v1/messages` — Anthropic Messages dialect. Send Anthropic model names and payload shapes; they are forwarded natively.
+Memory and compression are separate controls. Opaque provider state—including system/developer instructions, tool exchanges, Responses reasoning, and Anthropic thinking/redacted thinking—is protected from removal.
 
-## What every request gets
+When pricing metadata is unavailable and charging is disabled, deterministic mode still uses the conservative 8,192-token fallback input budget. When charging is enabled, an unknown unpriced model fails closed with `422 spm_model_unpriced`.
 
-Regardless of dialect, each request passes through the same pipeline: authentication and tenant resolution, plan rate limit, evidence-gated memory recall, deterministic compression, native-dialect forwarding, streaming, asynchronous ingest, and a signed receipt.
+## Why a receipt can show 0%
+
+Reduction is expected only when the history exceeds its active budget and includes a safely removable complete old exchange. Short requests, single-turn requests, and fully protected histories correctly produce:
+
+```text
+original_input_tokens == forwarded_input_tokens
+```
+
+This does not mean forwarding or receipts are broken.
 
 ## Request receipts
 
-Every request writes a signed receipt:
-
-```
-GET /v1/spm/requests?limit=50        # list (requires receipt:read)
-GET /v1/spm/requests/{receipt_id}    # single receipt
+```text
+GET /v1/spm/requests?limit=50
+GET /v1/spm/requests/{receipt_id}
 ```
 
-A receipt records the protocol dialect, model, latency, status, and full token accounting:
+Receipt lookup requires `receipt:read`. The public lookup response exposes operational metadata: protocol, model, modes, request/billing/memory states, bytes sent, provider-usage state, errors, and timestamps.
+
+The internal terminal receipt authority also stores token accounting used by Dashboard:
 
 | Field | Meaning |
 |-------|---------|
-| `original_input_tokens` | Estimated tokens of the request exactly as SPM-Polaris received it |
-| `forwarded_input_tokens` | Estimated tokens actually sent to the provider after memory-gated assembly |
-| `recalled_tokens` | Memory evidence tokens SPM-Polaris added to the prompt |
-| `output_tokens` | Completion tokens returned by the provider |
+| `original_input_tokens` | Estimated input received by SPM |
+| `forwarded_input_tokens` | Estimated input sent to the provider |
+| `recalled_tokens` | Admitted memory added to the provider prompt |
+| `output_tokens` | Provider output tokens when reported |
+| `memory_mode` / `memory_state` | Requested capability and terminal persistence/recall state |
+| `compression_mode` | Effective mode after safe bypass/degradation |
 
-Receipts are the source of truth for usage and debugging. On long conversations, the gap between `original_input_tokens` and `forwarded_input_tokens` shows how much replayed context the memory plane removed, while `recalled_tokens` shows precisely what gated evidence SPM-Polaris added back.
+Dashboard **Token savings** and **Recent request receipts** use those internal terminal records, including uncharged traffic. Historical receipts created before token columns existed can contain zeros. The current public `/v1/spm/requests` schema does not expose the four token columns directly.
 
-## Rate limits
+Local Proxy traffic does not traverse this hosted gateway and therefore does not create hosted gateway receipts.
 
-Requests are throttled per plan by a distributed, fail-closed limiter:
+## Response headers
 
-| Plan | Budget |
-|------|--------|
-| Free | 10 requests/minute |
-| Starter | 30 requests/minute |
-| Growth | 100 requests/minute |
-| Enterprise | Reviewed before activation |
+Successful hosted requests include SPM observability headers such as request/receipt ID, memory mode/state, compression mode, and echo-filter counts where applicable. Shadow mode also reports its estimated original and candidate-forwarded token counts.
 
-Exceeding the budget returns `429`. If the limiter itself is unavailable, SPM-Polaris returns `503 RATE_LIMITER_UNAVAILABLE` — it fails closed rather than serving unlimited traffic.
+## Safe bypasses
 
-## Health
-
-`GET /health`, `GET /livez`, `GET /readyz` — no auth, for load balancers and monitors.
+SPM falls back to passthrough when deterministic compression cannot safely project the protocol state or memory recall is degraded. Provider-managed Responses chains can also require passthrough. A bypass preserves provider semantics instead of forcing reduction.
 
 ## Errors
 
-| HTTP | Code | Meaning |
-|------|------|---------|
-| 401 | auth | Missing, malformed, or revoked key |
-| 403 | scope | Key lacks the required scope |
-| 429 | quota | Plan quota or rate budget exceeded — back off or upgrade |
-| 503 | `RATE_LIMITER_UNAVAILABLE` | The distributed limiter is down; SPM-Polaris fails closed |
-| 5xx | upstream | Provider errors are mapped through with their original status |
+| HTTP | Example code | Meaning |
+|------|--------------|---------|
+| 401 | auth invalid/revoked | SPM key is missing, malformed, revoked, or stale |
+| 403 | scope/access denied | Key or tenant cannot perform the operation |
+| 409 | stale fence/idempotency conflict | Retry only according to the returned state |
+| 422 | invalid mode / `spm_model_unpriced` | Request violates policy or charging catalog |
+| 429 | `RATE_LIMIT_EXCEEDED` | Plan rate budget exceeded; honor `Retry-After` |
+| 503 | `RATE_LIMITER_UNAVAILABLE` | Distributed limiter failed closed |
+| 5xx | provider/dependency failure | Inspect receipt/error code before retrying |
 
-Retry `429` and `503` responses with exponential backoff. Requests are idempotent at the memory layer, so a retried response never writes memory twice.
+Health probes: `GET /health`, `GET /livez`, and `GET /readyz`.

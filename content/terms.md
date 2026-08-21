@@ -4,9 +4,9 @@ title: Terms of Service
 
 # Terms of Service
 
-**Effective date: August 19, 2026**
+**Effective date: August 21, 2026**
 
-These Terms of Service ("Terms") are an agreement between you and Veridical Tech, Inc. ("Veridical Tech," "we," "us," or "our"), a Delaware C corporation. They govern your access to and use of SPM, including SPM-Polaris, our websites, documentation, console, APIs, MCP server, and related services (collectively, the "Service").
+These Terms of Service ("Terms") are an agreement between you and Veridical Tech, Inc. ("Veridical Tech," "we," "us," or "our"), a Delaware C corporation. They govern your access to and use of SPM, our websites, documentation, console, hosted APIs, MCP server, optional Local Proxy software, and related services (collectively, the "Service").
 
 By creating an account, accessing the Service, or using the Service on behalf of an organization, you agree to these Terms. If you use the Service for an organization, you represent that you have authority to bind it, and "you" includes that organization.
 
@@ -16,7 +16,7 @@ You must be at least 18 years old and legally capable of entering into these Ter
 
 ## 2. The Service
 
-SPM provides governed long-term memory infrastructure for AI applications, including provider proxy, memory ingestion, retrieval, evidence, compression, deletion, audit, and MCP capabilities. Features, limits, and availability may vary by plan. Documentation describes current behavior but is not a service-level commitment unless a separate written agreement says otherwise.
+SPM provides governed long-term memory infrastructure for AI applications, including hosted and local provider-proxy paths, memory ingestion, retrieval, evidence, compression, deletion, audit, and MCP capabilities. The SPM memory plane remains hosted when Local Proxy is used. Features, limits, and availability may vary by plan. Documentation describes current behavior but is not a service-level commitment unless a separate written agreement says otherwise.
 
 We may improve, modify, or discontinue parts of the Service. When a change materially reduces paid functionality, we will provide notice when reasonably practicable.
 

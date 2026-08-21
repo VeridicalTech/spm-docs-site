@@ -4,56 +4,77 @@ title: Architecture
 
 # Architecture
 
-## One sentence
-
-SPM-Polaris V3.0.0 is a provider proxy with a governed memory plane. Agents send requests to `api.spmos.ai`; SPM-Polaris handles memory around each request, and the configured provider serves the inference.
-
-## Two planes
-
-**Console plane** (`app.spmos.ai`) — accounts, organizations, tenants, API keys, vaulted provider credentials, and subscription and usage metadata.
-
-**Request plane** (`api.spmos.ai`) — the request gateway, the authoritative memory store, the derived retrieval index, runtime state, and optional local embedding/reranking.
-
-The request plane has no critical dependency on the console plane. If the console is unavailable, configured keys continue to work because traffic does not pass through the dashboard.
-
-## The request chain
+## One hosted memory plane, two provider paths
 
 ```
-client -> edge (TLS, limits) -> gateway
-  -> authenticate + resolve tenant/provider
-  -> memory recall (lexical + vector legs, fused)
-  -> evidence gate (fail-closed)
-  -> deterministic compression
-  -> provider forwarding (native dialect, streaming)
-  -> signed receipt + async ingest
+Hosted Provider Proxy
+client -> api.spmos.ai -> recall/compress -> configured provider
+                         | receipts + eligible ingest
+                         v
+                    hosted SPM memory
+
+Local credential custody
+client -> 127.0.0.1 Local Proxy -> configured provider
+              |
+              +---- recall + eligible ingest ----> hosted SPM memory
+
+MCP
+agent -> api.spmos.ai/mcp -> hosted SPM memory
 ```
 
-Recall and forwarding are separate stages. The provider does not decide what is remembered, ranked, admitted, or compressed.
+The Local Proxy changes provider-key custody and the path taken by model traffic. It does not move the SPM memory plane onto the user's machine.
 
-## Supporting subsystems
+## Control and request planes
 
-- **Provider catalog** — channel model lists are aggregated live from the models.dev dataset (12-hour TTL, stale-while-revalidate, bundled fallback). New upstream providers enter the catalog for review; they never bypass transport, SSRF, data-retention, or cost review automatically.
-- **Deletion pipeline** — purges and account closures run as leased, ordered steps (sync fence, purge, verify-absence, credential revocation, reservation drain, financial review, finalize) with retry, backoff, and per-step state. The verify-absence step re-scans against the write fence, so a purge cannot complete while data remains.
-- **Usage metering** — the write guard and the distributed rate limiter enforce plan quotas (requests per minute, monthly writes, stored memories, provider channels) and fail closed on limiter outage.
+**Console plane** (`app.spmos.ai`) manages accounts, usernames and OAuth sign-in, tenants, SPM keys, provider configurations, billing metadata, usage views, sources, and deletion requests.
 
-## Zero-LLM memory
+**Request plane** (`api.spmos.ai`) authenticates agent traffic, enforces plan limits, performs recall/compression, forwards hosted-provider traffic, serves MCP, writes receipts, and queues memory ingestion.
 
-Extraction, ranking, admission, and compression are deterministic. Consequently:
+Configured SPM keys remain usable when the console is unavailable because model and MCP traffic do not pass through the dashboard.
 
-- Memory growth does not increase inference cost.
-- Recall latency depends on code and indexes, not model queues.
-- The memory path has no hidden model drift; benchmarked behavior remains deterministic.
+## Recall boundary
 
-## Storage doctrine
+Recall combines lexical and vector candidates, applies stored trust before admission, favors source diversity, and enforces one final global `top_k`. The evidence gate rechecks tenant, namespace, generation, ACL, source state, and signed provenance.
 
-The authoritative store holds every memory record, job, receipt, and exact vector. The retrieval index is derived and rebuildable. It can be dropped and reconstructed from the authoritative store at copy speed, so the index is never the sole copy of data.
+The public `answer` field renders only the highest-priority admitted evidence item. A bounded `evidence_refs` list retains broader provenance and multiple premises. Source-span read tokens resolve the exact selected span; extracted-record tokens resolve their verified backing source.
+
+No generative answer model is added to this memory path.
+
+## Provider transparency and capture hygiene
+
+Hosted forwarding uses a guarded native transport rather than parsing provider output through a cross-dialect translator. Unknown provider JSON fields, SSE event order, response/item/part identifiers, reasoning objects, thinking blocks, and tool state are relayed unchanged.
+
+The observer works on a separate capture copy. Only user-visible assistant text is eligible for assistant memory capture:
+
+- Chat Completions: visible assistant content
+- Responses: `output_text`
+- Anthropic Messages: `text` / `text_delta`
+
+Reasoning summaries, thinking/redacted-thinking blocks, function/tool arguments, and partial JSON remain in provider traffic but never become memory sources.
+
+## Compression boundary
+
+Memory mode and compression mode are separate:
+
+- Memory controls recall and ingest permissions.
+- Compression controls whether old eligible exchanges are removed before forwarding.
+- System/developer instructions, tool state, Responses reasoning, and Anthropic thinking are protected.
+
+The conservative fallback input budget is 8,192 estimated tokens. Requests below the budget, single-turn requests, or histories containing no safely removable complete exchange can correctly show 0% reduction.
+
+## Storage and deletion
+
+The authoritative store owns sources, extracted records, jobs, fences, and receipts. Retrieval indexes are derived and rebuildable. Clear memory advances the write fence, purges history through that fence, and verifies absence. Account closure adds credential revocation and final account-state transitions.
+
+Deletion does not imply that pre-existing backups, WAL, or replicas disappear before their documented rotation periods.
 
 ## Failure behavior
 
-| When | What happens |
-|------|--------------|
-| Cache layer down | Rate limiting fails closed (clean 503) and self-recovers; no memory data at risk |
-| Retrieval index down | Recall degrades explicitly, never silently; index rebuilds from the authoritative store |
-| Provider down | Upstream error mapped to a standard provider error; your retries work |
-| Console down | Configured API keys keep serving traffic |
-| Ingest worker down | Requests unaffected; jobs queue and drain when the worker returns |
+| Failure | Behavior |
+|---------|----------|
+| Rate limiter unavailable | Fail closed with `503 RATE_LIMITER_UNAVAILABLE` |
+| No admissible evidence | Explicit empty/refused recall; no invented memory |
+| Provider unavailable | Provider-shaped upstream failure; memory integrity remains independent |
+| Ingest worker unavailable | Model request completes; jobs retry with backoff |
+| Console unavailable | Existing SPM keys continue on the request plane |
+| Retrieval dependency degraded | Explicit failure/degradation, never silent cross-tenant fallback |

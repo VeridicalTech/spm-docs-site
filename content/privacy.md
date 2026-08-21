@@ -4,9 +4,9 @@ title: Privacy Policy
 
 # Privacy Policy
 
-**Effective date: August 19, 2026**
+**Effective date: August 21, 2026**
 
-This Privacy Policy explains how Veridical Tech, Inc. ("Veridical Tech," "we," "us," or "our"), a Delaware C corporation, collects, uses, discloses, and protects information when you use SPM, including SPM-Polaris, our websites, documentation, console, APIs, MCP server, and related services (collectively, the "Service").
+This Privacy Policy explains how Veridical Tech, Inc. ("Veridical Tech," "we," "us," or "our"), a Delaware C corporation, collects, uses, discloses, and protects information when you use SPM, our websites, documentation, console, hosted APIs, MCP server, optional Local Proxy software, and related services (collectively, the "Service").
 
 ## 1. Scope and roles
 
@@ -28,7 +28,9 @@ We process information submitted to the Service, including prompts, conversation
 
 ### Provider and integration information
 
-If you connect an external AI model provider or other integration, we process the configuration and credentials needed to operate that connection. Provider credentials are stored in a protected vault and are not returned through the Service or intentionally written into memory records.
+If you connect an external AI model provider or other integration through the hosted Provider Proxy, we process the configuration and credentials needed to operate that connection. Hosted provider credentials are stored in a protected vault and are not returned through the Service or intentionally written into memory records.
+
+If you use Local Proxy, the upstream provider credential remains in its protected local configuration and is sent directly to the provider rather than to SPM. Local Proxy still sends recall queries and eligible memory content to hosted SPM according to the selected memory mode.
 
 ### Usage, audit, and technical information
 

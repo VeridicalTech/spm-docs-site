@@ -4,33 +4,39 @@ title: Benchmarks
 
 # Benchmarks
 
-Current product release: **SPM-Polaris V3.0.0**.
+This page reports only currently valid evidence. Historical scores measured on a different recall shape, embedding backend, or incomplete runner are not presented as current production accuracy.
 
-These are first-party SPM-Polaris results from our own harnesses and frozen-anchor runs — the same evidence class as vendor self-reports. We report bands rather than best runs and exclude degraded-validity runs from anchors. Scorecard date: 2026-08-16. Early runs predate both V3.0.0 and our launch-manifest discipline, so their full argv/commit records are not all preserved and they are not relabeled as V3.0.0 results; every new anchor run publishes a complete launch manifest (argv, commit SHA, worktree state, model and endpoint pins).
+## Verified production observations
 
-## Headline
+| Observation | Result | Scope |
+|-------------|--------|-------|
+| Long-history deterministic compression | 66,265 original input tokens → 365 forwarded; 279 recalled; **99.45% less provider input** | One real, eligible hosted Provider Proxy request |
+| Starter limiter burst | 30 successful requests + 15 HTTP 429 responses from a 45-request burst | One measured Starter 30 req/min window |
+| New MCP memory readiness | 8.23 seconds to ready | One production remember/status round trip |
+| MCP read integrity | Stored and read text matched byte-for-byte | Production remember → status → recall → read |
+| Warm historical MCP recall | 4.93 seconds | One warm production observation; not an SLO |
 
-| Metric | Value | Re-anchor status (2026-08-16) |
-|--------|-------|-------|
-| Context reduction | **99.507%** | Terminal-Bench v2: 160,509 → 791 tokens per query; stable |
-| Reader-token savings | **8.4×** | vs full-context replay, 20.2k reader tokens/query (LoCoMo arm); stable |
-| Agentic SWE-Atlas | **9/9** indicative | **Re-confirmed at current build**: gateway arm 4/4 on checkpoints 1–5, anchor-identical degraded caveat (ck1) |
-| LoCoMo accuracy | **67.9–69.2%** band | **Load-bearing recall re-measured: 77.8%** gold-evidence recall on a 301-question subset with the production embedding stack (voyage-4-large + rerank-2.5). The 99.7% payload-gold-recall figure from the original harness did not reproduce; the band is kept with this caveat |
-| LongMemEval v2-Small | **48.1%** | **Not reproducible**: the original harness was never committed and is lost. Current re-anchor at production shape: 22–25% with deterministic-hash embeddings (abstention protocol recovered 47–57% of false-premise questions); the production embedding arm is in flight |
-| Payload gold recall | **99.7%** | **Not reproduced**: 72.8–77.8% on the re-anchor subset across embedding backends (hash 29.6%). Treated as harness-era, unverifiable |
+These are observations, not guarantees. Network distance, corpus size, provider latency, cold span indexing, protected protocol state, and request shape all affect results.
 
-## How to read these
+## When token reduction appears
 
-- **First-party evidence standard.** These results use our harness and runs, the same evidence class as vendor self-reports. Depending on protocol, academic LoCoMo reproductions place Mem0 at 63–66.9 and Zep at 63.8–71.2; vendor pages self-report higher. The published harness keeps the comparison falsifiable.
-- **Bands, not bests.** The LoCoMo result is a band across three full runs. We discarded a higher single run (74.1%) under our drift discipline.
-- **Small N is annotated.** The agentic probe is 9/9 on both arms with validity caveats: a directional signal, not a superiority claim.
-- **Cost honesty.** The 99.507% context reduction pays back in ~4 queries under favorable conditions and 31–53 queries under adverse cache behavior. The report includes both figures.
+Deterministic compression needs both:
 
+1. input above the active budget (8,192 estimated tokens when no model-specific budget is available); and
+2. at least one complete old exchange that can be removed without touching protected state.
 
-## What the 2026-08-15 alignment changed
+Therefore 0% on short, single-turn, or opaque histories is correct. Do not extrapolate the 99.45% example to every request.
 
-An audit found the served recall shape had drifted from the shape the anchors were measured on: the production data plane asked for 6 evidence items with no source-span leg, while the anchors measured ~50 items plus source spans. The served shape is now aligned with the measured shape (deterministic span selector, top_k 50, 120k span budget, shared span-scan caches, 200k assembly budget) — benchmark numbers from now on describe what the product actually serves.
+## Recall-quality status
 
-## Method
+The production embedding service now uses a privately operated Voyage 4 Nano-compatible embedding runtime and no hosted reranker. Historical LoCoMo/payload-recall figures measured with hosted Voyage Large/rerank or older harness shapes are not current evidence.
 
-Benchmarks use frozen-anchor paired evaluations. Each checkpoint has one anchor configuration, and both arms (with-memory and baseline) receive the same canonical evidence stream. Runs missing forced compaction or transport symmetry are retained but marked degraded. Reader and judge models are pinned per anchor; readers cannot change mid-comparison.
+A 301-question run attempted across a high-latency tunnel degraded after dense-span timeouts and produced no valid result artifact. It is excluded. A current production-near re-anchor must separately report accuracy, abstention, latency, corpus state, and exact model/commit pins before a new recall-quality number is published.
+
+## Methodology rules
+
+- Publish the exact commit, configuration, model/embedding identity, corpus, question set, and launch command.
+- Keep degraded or interrupted runs, but label and exclude them from headline anchors.
+- Separate retrieval/evidence recall from downstream answer phrasing.
+- Report medians and tail latency where sample size permits.
+- Do not call a single request an SLO or a general savings guarantee.

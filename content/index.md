@@ -1,52 +1,48 @@
 ---
-title: SPM-Polaris Documentation
+title: SPM Documentation
 ---
 
-# SPM-Polaris Documentation
+# SPM Documentation
 
-**SPM** is the StellarPath Memory Operating System brand. **SPM-Polaris** is its hosted provider-proxy product; the current public release is **V3.0.0**. You point any OpenAI- or Anthropic-compatible client at the SPM endpoint and keep your existing LLM provider account; every request then gains evidence-gated recall, deterministic context compression, and a signed audit trail — with no generative LLM call added to the memory path.
+**SPM** is the StellarPath Memory Operating System: a hosted, evidence-gated memory plane for AI agents. It adds durable memory, bounded recall, deterministic context compression, deletion controls, and auditable token accounting around the model provider you already use.
 
-SPM-Polaris is a **hosted service**. There is no appliance or self-deployment: you integrate through the provider proxy or the MCP server while we operate the memory plane.
+The memory plane is hosted. You can choose where the upstream provider credential lives:
 
-## Two doors in
+| Path | Provider credential | Model traffic | Memory traffic |
+|------|---------------------|---------------|----------------|
+| **Hosted Provider Proxy** | Encrypted in the SPM credential vault | Through `api.spmos.ai` | Through SPM |
+| **Local Proxy** | In a protected loopback configuration on your machine | Directly from Local Proxy to your provider | Recall and eligible ingest still use hosted SPM |
+| **MCP** | No provider credential required | Your agent uses its existing model path | MCP tools call hosted SPM |
 
-| Door | Endpoint | For |
-|------|----------|-----|
-| Provider proxy | `https://api.spmos.ai/v1` | Any OpenAI/Anthropic-compatible app or agent |
-| MCP server | `https://api.spmos.ai/mcp` | Codex, Claude Code, and other MCP clients |
+Local Proxy is optional credential custody, not an offline or self-hosted edition of SPM.
 
-Both doors accept the same `spm_live_...` API key and enforce the same tenancy, quota, and evidence-gate rules.
+## Three ways to integrate
 
-## What SPM-Polaris does inside a request
+| Interface | Endpoint | Best for |
+|-----------|----------|----------|
+| Provider Proxy | `https://api.spmos.ai/v1` | OpenAI- or Anthropic-compatible apps that want hosted forwarding, compression, receipts, and memory |
+| MCP | `https://api.spmos.ai/mcp` | Codex, Claude Code, and other MCP clients that need explicit memory tools |
+| Local Proxy | `http://127.0.0.1:8765` | Harnesses that support a custom Base URL while keeping the upstream key under local custody |
 
-1. **Authenticates** your API key and resolves your tenant, namespace, policy, and provider channel.
-2. **Recalls** relevant memory through lexical and vector legs, fused and admitted through an evidence gate. If nothing qualifies, the gate fails closed instead of guessing.
-3. **Compresses** the assembled context deterministically. The memory path does not call a generative LLM, so memory growth does not increase inference cost.
-4. **Forwards** to your provider in its native dialect (OpenAI Chat Completions, OpenAI Responses, or Anthropic Messages) and streams the response back.
-5. **Ingests** the exchange asynchronously through idempotent, retried, dead-lettered jobs, then writes a signed request receipt with full token accounting.
+Hosted interfaces accept an `spm_live_...` key. Local Proxy gives the downstream harness a separate local token; it does not expose the upstream key or SPM key to that harness.
 
-Recall and forwarding are explicitly separate stages: your provider never decides what is remembered, ranked, admitted, or compressed.
+## What happens in a hosted proxy request
 
-## Plans at a glance
+1. Authenticate the SPM key and resolve its tenant, scopes, provider configuration, and model route.
+2. Recall admissible memory through lexical and vector retrieval, trust-aware ranking, and the evidence gate.
+3. Apply deterministic compression only when the input exceeds its budget and complete old exchanges can be removed safely.
+4. Forward the request in its native OpenAI Chat, OpenAI Responses, or Anthropic Messages dialect.
+5. Relay provider JSON and SSE bytes without rebuilding reasoning, tool, or event state.
+6. Record a terminal receipt and asynchronously ingest only eligible visible conversation text.
 
-| | Free | Starter | Growth | Enterprise |
-|---|---|---|---|---|
-| Price | $0 | $9/mo · $99/yr | $15/mo · $150/yr | Custom |
-| API rate limit | 10 req/min | 30 req/min | 100 req/min | Reviewed |
-| Memory writes / month | 500 | 3,000 | 8,000 | Reviewed |
-| Stored memories | 1,000 | 10,000 | 50,000 | Reviewed |
-| Provider channels | 1 | 3 | 10 | Reviewed |
+Provider reasoning, Anthropic thinking, redacted thinking, tool arguments, and other opaque protocol state are preserved for the provider but excluded from memory capture.
 
-Full terms and enforcement behavior: [Plans & quotas](plans.html).
+## Start here
 
-## Where to go next
-
-- [Quickstart](quickstart.html) — first memory-backed call in five minutes
-- [Authentication & API keys](authentication.html) — keys, scopes, and hygiene
-- [Plans & quotas](plans.html) — pricing, allowances, and limit behavior
-- [Bring your own provider](providers.html) — presets, live model catalog, custom endpoints
-- [Provider proxy API](proxy-api.html) — endpoints, receipts, error codes
-- [Memory, evidence & deletion](memory.html) — the gate, provenance, and signed purge receipts
-- [MCP server](mcp.html) — agent-native memory tools
-- [Architecture](architecture.html) — planes, storage doctrine, failure behavior
-- [Benchmarks](benchmarks.html) — the scorecard, with footnotes
+- [Quickstart](quickstart.html) — choose hosted forwarding, Local Proxy, or MCP
+- [Bring your own provider](providers.html) — provider/model configuration and credential boundaries
+- [Local Proxy](local-proxy.html) — install `@spmos/local-proxy`
+- [Provider Proxy API](proxy-api.html) — memory/compression modes, receipts, and errors
+- [MCP server](mcp.html) — `remember`, `recall`, `read`, `delete`, and `status`
+- [Memory, evidence & deletion](memory.html) — trust, best-evidence answers, and purge behavior
+- [Benchmarks](benchmarks.html) — measured evidence and explicit limits

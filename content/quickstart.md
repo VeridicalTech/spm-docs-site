@@ -4,82 +4,117 @@ title: Quickstart
 
 # Quickstart
 
-Create a memory-backed request in about five minutes.
+Choose the integration that matches your credential boundary.
 
-## 1. Create your account and API key
+## 1. Create an SPM key
 
-Sign in to the console at `app.spmos.ai` (email sign-up; no credit card required for the Free plan). Under **API Keys**, create a key. Keys look like `spm_live_...` and are shown once — store the key securely.
+Sign in at `https://app.spmos.ai`, open **API Keys**, and create a key. It is shown once.
 
-Choose the scopes the key needs: `memory:write`, `memory:read`, `memory:delete`, `receipt:read`. One key per agent or environment keeps revocation surgical; see [Authentication & API keys](authentication.html).
+Recommended scopes:
 
-## 2. Add a provider channel
+- Provider Proxy or Local Proxy with full memory: `memory:read` and `memory:write`
+- MCP explicit memory: add `memory:delete` only if the agent should delete sources
+- Hosted receipt lookup: add `receipt:read`
 
-Under **Providers**, add the LLM account SPM-Polaris should forward to:
+The key's memory scopes determine the hosted proxy's default memory mode. A request can lower that mode, but it cannot grant itself a scope the key does not have.
 
-1. Pick a preset (OpenAI, Anthropic, DeepSeek, OpenRouter, Groq, Mistral, xAI, Together AI, Fireworks AI, Moonshot AI, Alibaba DashScope) or choose a **custom endpoint**.
-2. Paste the provider API key. It is written to the credential vault and is never returned to the browser, written to memory, or logged.
-3. Select a default model from the searchable catalog — entries show context window, pricing, and reasoning/tool capability badges — or type a model name manually.
-4. Optionally press **Test connection** to validate the credential against the provider's live model list before saving.
+## 2. Choose a provider path
 
-The Free plan includes 1 provider channel; Starter allows 3; Growth allows 10. Full detail: [Bring your own provider](providers.html).
+### Option A — Hosted Provider Proxy
 
-## 3. Make a call
+Use this when you want SPM to operate forwarding and hosted gateway receipts.
 
-**OpenAI SDK** (Python):
+1. Open **Providers** in the console.
+2. Select one upstream configuration and one or more allowed models.
+3. For a preset provider, select models from the models.dev-backed catalog. Presets do not probe provider `/models`.
+4. For **Custom**, enter the Base URL, API style, key, and optional headers/query parameters. Custom channels can fetch the upstream model list.
+5. Store the channel. Provider secrets are vaulted and are never returned to the browser.
+
+Point an OpenAI-compatible client at:
+
+```text
+https://api.spmos.ai/v1
+```
 
 ```python
 from openai import OpenAI
 
 client = OpenAI(
     base_url="https://api.spmos.ai/v1",
-    api_key="spm_live_...",          # your SPM-Polaris key, not the provider key
-)
-
-reply = client.chat.completions.create(
-    model="deepseek-chat",           # any model your channel serves
-    messages=[{"role": "user", "content": "Remember: my deploy window is Friday."}],
-)
-print(reply.choices[0].message.content)
-```
-
-**Anthropic SDK**:
-
-```python
-import anthropic
-
-client = anthropic.Anthropic(
-    base_url="https://api.spmos.ai",
     api_key="spm_live_...",
 )
+
+response = client.chat.completions.create(
+    model="your-configured-model",
+    messages=[{"role": "user", "content": "Remember that our deploy window is Friday."}],
+)
+print(response.choices[0].message.content)
 ```
 
-**curl**:
+### Option B — Local provider credential custody
+
+Use this when the harness supports a custom Base URL and you do not want to vault the upstream provider key in SPM.
+
+Requirements: Node.js `>=22.15`, an SPM key, and an upstream provider key.
 
 ```bash
-curl https://api.spmos.ai/v1/chat/completions \
-  -H "Authorization: Bearer spm_live_..." \
-  -H "Content-Type: application/json" \
-  -d '{"model":"deepseek-chat","messages":[{"role":"user","content":"Hello"}]}'
+npm install --global @spmos/local-proxy
+spm setup
+spm doctor
+spm start
 ```
 
-Migration requires only the **base URL + key**. The rest of your agent code does not change; streaming, tool calling, and provider-specific parameters pass through.
+In another terminal:
 
-## 4. See memory work
+```bash
+export SPM_LOCAL_PROXY_TOKEN="$(spm config token)"
+spm print-config codex
+# or
+spm print-config claude
+```
 
-Send several turns, then ask about an earlier statement. SPM-Polaris recalls relevant memory through the evidence gate and folds it into the prompt. On our benchmark harness this added 791 tokens instead of the complete history — a 99.507% context reduction ([Benchmarks](benchmarks.html)).
+The harness sends its chosen model to Local Proxy. Local Proxy sends the provider key directly to the configured upstream, while recall queries and eligible memory content still go to hosted SPM.
 
-When no stored memory qualifies, the gate fails closed: the model receives no invented context, and the console **Recall** view shows the gate reason and evidence count for the attempt.
+See [Local Proxy](local-proxy.html) before using custom headers or query parameters.
 
-## 5. Watch it in the console
+### Option C — MCP memory tools
 
-- **Dashboard** — plan usage bars (monthly writes, stored memories) and recent activity.
-- **Sources** — every stored memory source, with targeted purge.
-- **Recall** — gate outcomes with `gate_reason` and `evidence_count` per attempt.
-- **Audit** — signed request receipts (original vs forwarded tokens, recalled memory tokens, latency, status) and purge receipts.
+Use MCP when the agent should explicitly remember and recall while keeping its existing model transport:
+
+```toml
+[mcp_servers.spm]
+url = "https://api.spmos.ai/mcp"
+headers = { Authorization = "Bearer spm_live_..." }
+```
+
+The production server name is **SPM** and the tools are exactly `remember`, `recall`, `read`, `delete`, and `status`.
+
+## 3. Verify behavior
+
+For hosted proxy requests, inspect:
+
+- `x-spm-memory-mode`
+- `x-spm-memory-state`
+- `x-spm-compression-mode`
+- `x-spm-request-id`
+- `x-spm-receipt-id`
+
+Dashboard **Token savings** and **Recent request receipts** are backed by terminal hosted-gateway receipts.
+
+For Local Proxy, inspect its local `x-spm-*` response headers. Local Proxy requests do not currently create hosted gateway receipts and do not populate hosted gateway savings views.
+
+## 4. Understand 0% reduction
+
+The default deterministic input budget is 8,192 estimated tokens. Token reduction requires:
+
+1. a history above the active budget; and
+2. at least one complete old exchange that is safe to remove.
+
+Short histories, single-turn requests, provider-managed state, or histories composed only of protected system/tool/reasoning/thinking content can correctly show 0%.
 
 ## Next steps
 
-- [Provider proxy API](proxy-api.html) — endpoints, streaming, receipts, error codes
-- [MCP server](mcp.html) — plug SPM-Polaris into Codex or Claude Code
-- [Memory, evidence & deletion](memory.html) — what gets remembered, and how to prove deletion
-- [Plans & quotas](plans.html) — what happens when you approach a limit
+- [Provider Proxy API](proxy-api.html)
+- [Local Proxy](local-proxy.html)
+- [MCP server](mcp.html)
+- [Memory, evidence & deletion](memory.html)

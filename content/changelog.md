@@ -4,41 +4,41 @@ title: Changelog
 
 # Changelog
 
-## 2026-08-19 — SPM-Polaris V3.0.0
+## 2026-08-21
 
 ### Added
-- **Plans & quotas enforced end to end** — Free, Starter ($9/mo `·` $99/yr), and Growth ($15/mo `·` $150/yr) now enforce rate limits, monthly memory-write allowances, stored-memory ceilings, and provider-channel counts. Usage progress bars live on the console Dashboard.
-- **Live billing** — Stripe Checkout is live for all four paid SKUs; plan changes execute as instant switches against the existing subscription.
-- **Live provider model catalog** — channel forms are fed by the models.dev aggregate (12-hour TTL, stale-while-revalidate, bundled fallback) with freshness labeling, searchable model comboboxes, and context/price/reasoning/tool badges.
-- **Connection probe** — Test connection validates a credential against the provider's live model list with production SSRF guardrails before saving.
-- **Custom provider channels** — any OpenAI-compatible or Anthropic Messages endpoint with full control of base URL, API style, model, and key.
-- **Recall transparency** — the console Recall view surfaces gate reason and evidence count per attempt; receipts carry original vs forwarded vs recalled token accounting.
+
+- Published `@spmos/local-proxy` for loopback provider credential custody, with Codex/Claude configuration output, local token isolation, DNS-pinned HTTPS forwarding, and hosted SPM recall/ingest.
+- Added a complete public distinction between hosted Provider Proxy, MCP, and Local Proxy.
 
 ### Changed
-- Product identity is now explicit: **SPM** is the StellarPath Memory Operating System brand, **SPM-Polaris** is the hosted provider-proxy product, and **V3.0.0** is the current public release.
-- Revoking an API key or provider channel now deletes it — revoked items no longer linger in console lists.
-- Account closure runs as a fully tracked pipeline: sync fence, purge, verify-absence, credential revocation, reservation drain, financial review, finalize.
+
+- Public product naming is **SPM — StellarPath Memory Operating System**. Seed/codename and console version labels are no longer part of the user-facing identity.
+- Hosted Provider Proxy memory defaults now derive from the SPM key's scopes. Deterministic compression uses an 8,192-token fallback budget even when charging is disabled.
+- One provider configuration can own multiple allowed models. Preset providers use the reviewed models.dev catalog; only Custom BYO can fetch the upstream model list.
+- Hosted embedding moved to a privately operated Voyage 4 Nano-compatible runtime; hosted Voyage API and reranker dependencies are no longer in the active production path.
 
 ### Fixed
-- Purge verification now runs against the advanced memory fence, closing a gap where post-fence writes could survive a purge.
-- Deletion-pipeline financial review no longer deadlocks on accounts holding legacy ledger rows.
+
+- Provider JSON/SSE transparency now preserves reasoning/thinking/tool state and provider event identifiers without cross-dialect rebuilding.
+- Memory capture now uses protocol-specific visible-text allowlists and excludes reasoning, thinking, redacted thinking, tool/function arguments, and partial JSON.
+- Recall applies trust precedence, source diversity, normalized-text deduplication, and one global `top_k`.
+- Recall `answer` now renders one best evidence item instead of concatenating unrelated sources.
+- Source-span read tokens return the exact selected span; extracted records return their verified backing source.
+- Dashboard Token savings and Recent request receipts now read the terminal hosted-gateway receipt authority.
+
+## 2026-08-20
+
+- Added unique username login, profile username/display-name/password updates, Google and GitHub sign-in surfaces, and English-only account UI.
+- Added multi-model provider ownership and server-only Custom BYO model probing.
+- Replaced provider protocol normalization with guarded native forwarding.
+
+## 2026-08-19
+
+- Enforced Free, Starter, and Growth quotas for request rate, monthly memory writes, stored memories, and provider configurations.
+- Opened confirmed-email registration and removed the pilot approval gate.
+- Added complete tenant-history Clear memory and account-closure workflows.
 
 ## 2026-08-14
 
-### Added
-- **Signed purge receipts** — Every purge returns an HMAC-SHA256 receipt (`purge-receipt+v1`) persisted with the purge record. The record stores the key id, so receipts survive key rotation.
-- **Write-side provenance transport** — Role spans flow from gateway projection through extraction, with user/assistant/mixed stamping and reserved-key overwrite protection.
-- **Vector-index rebuild tool** — bulk reindex rebuilds the derived index from the authoritative store at copy speed through the production write path.
-
-### Fixed
-- **Agentic self-pollution echo** — Probe and scaffold text no longer round-trip into memory on the gateway path.
-- **Cross-role fragment attribution** — Memory fragments spanning a role boundary resolve to mixed instead of the start offset's role.
-- **Idempotent vector upsert** — Re-extraction heals through verified overwrite instead of failing terminally.
-
-### Changed
-- Product naming was temporarily shortened to **SPM (StellarPath Memory)**. This naming decision was superseded by the explicit **SPM-Polaris V3.0.0** product identity on 2026-08-19.
-- Documentation site launched; the console and landing page moved to the English-only cold monochrome design system.
-
-## 2026-07-29 — 0.1.0
-
-Initial pilot build: subscription plans, distributed rate limiting (fail-closed), evidence replay protection, OTel tracing, structured logging, OpenAPI exports, a public documentation skeleton, an incident-response runbook, and a Python SDK skeleton.
+- Added signed purge receipts, write-side provenance transport, vector-index rebuild tooling, and self-echo filtering.

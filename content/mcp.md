@@ -4,34 +4,41 @@ title: MCP server
 
 # MCP server
 
-SPM-Polaris provides a streamable HTTP MCP server for agent memory:
+SPM exposes account-scoped memory as a stateless streamable HTTP MCP server:
 
-```
+```text
 https://api.spmos.ai/mcp
 Authorization: Bearer spm_live_...
 ```
 
-The MCP server and the provider proxy accept the same `spm_live` key and enforce the same tenancy, scopes, and evidence gate.
+The production server name is **SPM**. Tool names are exactly `remember`, `recall`, `read`, `delete`, and `status`; clients do not need product-version aliases.
 
 ## Tools
 
-| Tool | Parameters | What it does | Scope |
-|------|-----------|--------------|-------|
-| `remember` | `text` (required), `idempotency_key` (required), `source_id`?, `topic`? (default `general`) | Store one memory source idempotently | `memory:write` |
-| `recall` | `question` (required), `top_k`? (default 20, max 50) | Evidence-gated recall; returns `evidence_refs` with short-lived `read_token` values | `memory:read` |
-| `read` | `read_tokens` (required, JSON array) | Resolve read tokens from a recall result back to the original source span text | `memory:read` |
-| `delete` | `source_id` (required), `idempotency_key` (required) | Delete one source and its derived candidates idempotently | `memory:delete` |
-| `status` | `source_ids`? (array) | Account-scoped memory readiness without loading all records | `memory:read` |
+| Tool | Important parameters | Result |
+|------|----------------------|--------|
+| `remember` | `text`, `idempotency_key`, optional `source_id` and `topic` | Queues one source idempotently |
+| `status` | optional `source_ids[]` | Reports readiness without reading full records |
+| `recall` | `question`, optional `top_k` (default 20, max 50) | Best-evidence answer plus bounded evidence refs |
+| `read` | `read_tokens[]` | Resolves selected evidence to verified source text |
+| `delete` | `source_id`, `idempotency_key` | Deletes a source and derived candidates idempotently |
 
-Notes on usage:
+Scopes: `remember` requires `memory:write`; `recall`, `read`, and `status` require `memory:read`; `delete` requires `memory:delete`.
 
-- Pass the `read_token` strings from `recall` evidence refs to `read` **verbatim** — do not parse, unwrap, or re-serialize them. The parameter is always an array, even for a single token.
-- `recall` applies the same evidence gate as the proxy path: when nothing qualifies, the result is an explicit empty/refused outcome with a gate reason, never invented content.
-- `remember` and `delete` are idempotent — retrying with the same idempotency key is safe and does not double-write.
+## Recall and read contract
 
-## Client configuration
+`top_k` is one global ceiling across extracted records and selected source spans. The returned `answer` renders only the highest-priority admitted evidence item; SPM does not concatenate every match into it.
 
-**Codex** (`config.toml`):
+`evidence_refs` can retain up to `top_k` broader items for provenance or multiple premises. Each ref contains a short-lived `read_token`:
+
+- source-span evidence resolves to the exact selected span;
+- extracted-record evidence resolves to its verified backing source.
+
+Pass tokens to `read` verbatim as a JSON array. Do not decode and re-serialize them.
+
+When no evidence qualifies, recall returns an explicit empty/refused outcome with a machine-readable gate reason. It does not invent an answer.
+
+## Codex
 
 ```toml
 [mcp_servers.spm]
@@ -39,19 +46,35 @@ url = "https://api.spmos.ai/mcp"
 headers = { Authorization = "Bearer spm_live_..." }
 ```
 
-**Claude Code** / generic MCP JSON:
+Prefer an environment-backed secret mechanism when your client supports one. A 401 `invalid_token` means the server was reached but the SPM key is missing, malformed, expired, revoked, or belongs to another environment.
+
+## Claude Code and generic MCP JSON
 
 ```json
 {
   "mcpServers": {
     "spm": {
       "url": "https://api.spmos.ai/mcp",
-      "headers": { "Authorization": "Bearer spm_live_..." }
+      "headers": {
+        "Authorization": "Bearer spm_live_..."
+      }
     }
   }
 }
 ```
 
+Restart the client after adding a server so it reloads the tool catalog.
+
+## Recommended round trip
+
+1. `remember` with a stable idempotency key.
+2. Poll `status` until the source is ready.
+3. `recall` using a natural-language question.
+4. Use `read` when the agent needs exact provenance or additional premises.
+5. `delete` test data when the workflow is complete.
+
+The MCP service is memory-only. It does not proxy your model request and does not require an upstream provider key.
+
 ## Health
 
-The MCP server exposes unauthenticated `/health`, `/livez`, and `/readyz` probes; readiness reports the memory API and control-database dependencies individually and returns `503` while degraded.
+`/health`, `/livez`, and `/readyz` are unauthenticated probes. The MCP endpoint itself requires authentication.

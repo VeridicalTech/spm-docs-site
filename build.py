@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the SPM-Polaris documentation site (static, no JS framework).
+"""Build the SPM documentation site (static, no JS framework).
 
     docs-site/.venv/bin/python docs-site/build.py
 
@@ -29,9 +29,9 @@ CONTENT = ROOT / "content"
 TEMPLATE = (ROOT / "templates" / "page.html").read_text(encoding="utf-8")
 DIST = ROOT / "dist"
 SYSTEM_NAME = "StellarPath Memory Operating System"
-PRODUCT_NAME = "SPM-Polaris"
-PRODUCT_VERSION = "V3.0.0"
-PRODUCT_RELEASE = f"{PRODUCT_NAME} {PRODUCT_VERSION}"
+PRODUCT_NAME = "SPM"
+PRODUCT_VERSION = ""
+PRODUCT_RELEASE = PRODUCT_NAME
 # Brand images are vendored here so the docs site builds without the console
 # checkout next to it.
 WEB_PUBLIC = ROOT / "assets" / "logo"
@@ -43,6 +43,7 @@ PAGES = [
     ("authentication", "Start", "Authentication & API keys"),
     ("plans", "Start", "Plans & quotas"),
     ("providers", "Guides", "Bring your own provider"),
+    ("local-proxy", "Guides", "Local Proxy"),
     ("proxy-api", "Guides", "Provider proxy API"),
     ("memory", "Guides", "Memory, evidence & deletion"),
     ("mcp", "Guides", "MCP server"),

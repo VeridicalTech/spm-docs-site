@@ -6,7 +6,7 @@ title: Authentication & API keys
 
 ## The one credential your agents need
 
-Agents authenticate to SPM-Polaris with a single API key. They never receive your console session or provider keys:
+Agents authenticate to hosted SPM interfaces with a single API key. They never receive your console session or vaulted provider keys:
 
 ```
 Authorization: Bearer spm_live_...
@@ -38,10 +38,22 @@ Keys carry least-privilege scopes:
 
 A proxy-only integration still exercises memory scopes internally per request; grant `receipt:read` only to tooling that audits traffic.
 
+The key's read/write scopes also select the Provider Proxy's default memory mode. A request may lower that mode with `x-spm-memory-mode`, but it cannot upgrade beyond the key.
+
 After console sign-in, the web backend issues short-lived capability tokens for console operations. This credential domain is separate from agent keys, so a leaked agent key cannot open the console, and a console session cannot retrieve provider secrets.
 
 ## Hygiene
 
 - Create one key per agent or environment; revoking a key deletes it — revoked keys no longer appear in console lists and immediately stop authenticating.
 - Rotate keys on suspicion; frequent rotation has no usage penalty.
-- Never commit keys. SPM-Polaris rejects malformed keys promptly, but a committed `spm_live` key remains live until revoked.
+- Never commit keys. SPM rejects malformed keys promptly, but a committed `spm_live` key remains live until revoked.
+
+## Local Proxy credential domains
+
+Local Proxy stores the SPM key and provider key in its protected local configuration and gives the downstream harness a separate random local token. The provider key goes directly to the configured upstream; the SPM key goes only to hosted memory endpoints.
+
+Treat all three values as secrets. `spm config` masks them; `spm config token` intentionally prints the local harness token.
+
+## Console sign-in
+
+The console accepts email or unique username login. Google and GitHub sign-in are optional alternatives. OAuth providers receive only their configured authentication redirect; SPM does not request Gmail, Drive, Contacts, or Calendar access.
