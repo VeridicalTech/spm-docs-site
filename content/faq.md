@@ -29,10 +29,10 @@ Local Proxy relays the route to the upstream. It does not synthesize a list from
 `spm doctor` validates local schema, listener, and API-style ownership. It does not prove SPM key scopes, provider credentials, upstream model access, port availability, or a complete request.
 
 ## Why does a request show 0% reduction?
-The history must exceed the active budget and contain a complete old exchange that is safe to remove. Short, single-turn, or protected tool/reasoning/thinking histories can correctly show 0%.
+The history must exceed the active budget and contain a complete old exchange that is safe to remove. The two most recent eligible exchanges remain protected, and older history is removed only when passed recall evidence covers the exact removal set. Short, single-turn, protected tool/reasoning/thinking histories, empty recall, or unrelated recall can correctly show 0%.
 
 ## Does SPM remove reasoning or tool state?
-No. Provider reasoning, Anthropic thinking/redacted thinking, tool/function arguments, event order, and identifiers are protected from compression and relayed unchanged. They are excluded from memory capture.
+Hosted Provider Proxy protects provider reasoning, Anthropic thinking/redacted thinking, tool/function arguments, event order, and identifiers from compression and relays them unchanged. Its memory capture excludes reasoning, thinking, tool/function arguments, and partial JSON. Equivalent Local Proxy behavior is prepared for `0.1.1`; public npm `0.1.0` predates it and can capture streamed tool arguments or Anthropic partial JSON.
 
 ## Why is recall `answer` not a polished entity answer?
 It is the highest-priority admitted evidence item, not an LLM-generated synthesis. Use `evidence_refs` and `read` for exact provenance; let the downstream agent phrase the final answer.
@@ -48,6 +48,9 @@ Recall fails closed with an explicit empty/refused state and gate reason. It doe
 
 ## Can I delete my data?
 Yes: delete one source, Clear memory for tenant history, or Close account. Active-store deletion is verified; pre-existing backups/WAL/replicas expire on their retention schedule.
+
+## Why can I not reuse a deleted source ID?
+Targeted deletion leaves a tombstone for that identity in the current memory generation. Reusing it returns `409 SOURCE_ID_PURGED`, preventing deleted data from being recreated behind an existing purge receipt. Use a new source ID, or reuse it only after a deliberate memory-generation advance.
 
 ## Can another tenant see my memory?
 Tenant IDs, row-level security, namespace/generation fences, signed tokens, and final evidence-gate checks prevent cross-tenant recall.

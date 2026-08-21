@@ -8,10 +8,14 @@ title: Local Proxy
 
 It is **not** self-hosted SPM. Evidence-gated recall and eligible memory ingest still call the hosted SPM memory plane.
 
+Current npm release: **`@spmos/local-proxy@0.1.0`**.
+
+> **Release boundary:** version `0.1.1` is prepared in the public GitHub repository but is not published to npm yet. npm `0.1.0` does not emit `x-spm-continuity-state`, protect the two most recent exchanges, require recalled evidence from the removal set, or reliably exclude streamed tool arguments and Anthropic partial JSON from memory capture. Until `0.1.1` is published, use Hosted Provider Proxy when those guarantees are required.
+
 ## Install
 
 ```bash
-npm install --global @spmos/local-proxy
+npm install --global @spmos/local-proxy@0.1.0
 spm setup
 spm doctor
 spm start
@@ -123,7 +127,15 @@ These controls do not make an arbitrary upstream trustworthy. You remain respons
 
 ## Observability
 
-Local responses include `x-spm-local-proxy`, request/memory/compression state, and original/forwarded/recalled token estimates.
+Public npm `0.1.0` responses include `x-spm-local-proxy`, request/memory/compression state, and original/forwarded/recalled token estimates. They do not include `x-spm-continuity-state`.
+
+### Prepared for 0.1.1
+
+The public GitHub source prepared for `0.1.1` adds `x-spm-continuity-state`. Its deterministic compression protects the two most recent eligible exchanges and removes older history only when recall reports `status=recalled`, `gate_reason=passed`, and at least one admitted evidence source bound to the exact removal set.
+
+The prepared safe outcomes include `bypassed_empty_recall`, `bypassed_unproven_recall`, `bypassed_recall_degraded`, `bypassed_protected_context`, and `bypassed_provider_state`. These states preserve the complete request instead of forcing compression.
+
+The prepared assistant capture is limited to visible Chat content, Responses `output_text`, and Anthropic `text`/`text_delta`. It excludes reasoning/thinking, tool/function arguments, signatures, and partial JSON from memory.
 
 Local Proxy requests do **not** currently create hosted gateway receipts or populate Dashboard **Token savings** and **Recent request receipts**. Use the local response headers for per-request evidence.
 
@@ -131,6 +143,7 @@ Local Proxy requests do **not** currently create hosted gateway receipts or popu
 
 - `spm doctor` validates local configuration; it does not prove key scopes, bind the port, or complete a live provider request.
 - `GET /v1/models` fails when the upstream does not expose that route.
-- 0% reduction is normal below budget or when no complete old exchange is removable.
+- 0% reduction is normal below budget, when no complete old exchange is removable, or when recall cannot prove continuity for the planned removal.
+- npm `0.1.0` predates source-bound continuity and the current capture allowlists. Do not use it when either guarantee is required. The prepared `0.1.1` source still recognizes deterministic source identities written by `0.1.0`.
 - One config/process selects one upstream transport, not one model. Multiple providers require separate config homes/processes/ports.
 - The foreground process stops with `Ctrl+C`; this release has no daemon manager, `status`, or `stop` command.

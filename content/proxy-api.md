@@ -47,7 +47,7 @@ x-spm-compression-mode: passthrough | shadow | deterministic
 |------|----------------|
 | `passthrough` | Original request, plus recalled context when memory read succeeds |
 | `shadow` | Original request unchanged; SPM measures the eligible compression result for observability |
-| `deterministic` | Safely removable complete old exchanges may be removed and admitted recall may be inserted |
+| `deterministic` | Old complete exchanges may be removed only when source-bound admitted recall proves continuity; the two most recent eligible exchanges remain protected |
 
 Memory and compression are separate controls. Opaque provider state—including system/developer instructions, tool exchanges, Responses reasoning, and Anthropic thinking/redacted thinking—is protected from removal.
 
@@ -89,11 +89,26 @@ Local Proxy traffic does not traverse this hosted gateway and therefore does not
 
 ## Response headers
 
-Successful hosted requests include SPM observability headers such as request/receipt ID, memory mode/state, compression mode, and echo-filter counts where applicable. Shadow mode also reports its estimated original and candidate-forwarded token counts.
+Successful hosted requests include SPM observability headers such as request/receipt ID, memory mode/state, compression mode, continuity state, and echo-filter counts where applicable. Shadow mode also reports its estimated original and candidate-forwarded token counts.
+
+`x-spm-continuity-state` explains whether history removal was committed:
+
+| Value | Meaning |
+|-------|---------|
+| `committed` | Older exchanges were removed after passed recall supplied evidence from the exact removal set |
+| `not_needed` | Deterministic mode found no exchange that needed removal |
+| `shadow_only` | Compression was measured but the original request was forwarded |
+| `bypassed_empty_recall` | No admitted recalled text could prove continuity |
+| `bypassed_unproven_recall` | Recall did not pass the gate or its evidence did not cover the removal set |
+| `bypassed_recall_degraded` | Recall failed, so the full history was preserved |
+| `bypassed_protected_context` | The request could not fit without removing protected state |
+| `not_applicable` | The active mode did not require a continuity decision |
+
+The Local Proxy source prepared for `0.1.1` can additionally report `bypassed_provider_state` for provider-managed Responses chains. Public npm `0.1.0` predates continuity-state headers.
 
 ## Safe bypasses
 
-SPM falls back to passthrough when deterministic compression cannot safely project the protocol state or memory recall is degraded. Provider-managed Responses chains can also require passthrough. A bypass preserves provider semantics instead of forcing reduction.
+SPM falls back to passthrough when deterministic compression cannot safely project the protocol state, memory recall is empty or degraded, or admitted evidence is not sourced from the exchanges selected for removal. A successful text match alone is insufficient: recall must report `status=recalled`, `gate_reason=passed`, and at least one evidence source in the exact removal set. Provider-managed Responses chains also bypass recall mutation and compression. A bypass preserves provider semantics instead of forcing reduction.
 
 ## Errors
 

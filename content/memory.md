@@ -14,12 +14,19 @@ Memory enters through:
 
 Write jobs are idempotent, retried with backoff, and dead-lettered after exhausting attempts. A slow ingest job does not block the provider response.
 
-For proxied conversations, capture and provider forwarding are separate copies:
+For Hosted Provider Proxy and Local Proxy source prepared for `0.1.1`, capture and provider forwarding are separate copies:
 
 - visible user text can be captured according to the request's memory mode;
 - Chat assistant content, Responses `output_text`, and Anthropic `text` can be captured;
 - reasoning summaries, reasoning objects, thinking/redacted-thinking blocks, tool/function arguments, signatures, and partial JSON are never memory content;
 - those excluded objects still pass to and from the provider unchanged.
+- short standalone assistant messages that only report missing memory/context and inability to continue remain auditable sources but are not promoted into recall candidates;
+- an assistant message containing a path, URL, hash, assignment, status, or any other durable fact still follows normal extraction even if it also mentions missing context;
+- exact repeated proxy captures reuse a content-stable source identity inside the active namespace generation.
+
+Hosted Proxy ingest carries `source_kind` and positional `role_spans`, so extraction can retain whether visible text came from the user or assistant. The Local Proxy source prepared for `0.1.1` carries the same fields and recognizes deterministic source identities created by `0.1.0` during continuity checks. Exact repeated content uses a stable source identity instead of creating duplicate source records.
+
+Public npm `0.1.0` predates the current Local Proxy capture allowlists: streamed Chat tool-call arguments and Anthropic partial JSON can enter its assistant capture. Use Hosted Provider Proxy when capture hygiene is required until `0.1.1` is published.
 
 Single-turn input can be stored. In multi-turn histories, SPM avoids duplicating the latest user unit when it is expected to return as part of later history.
 
@@ -42,6 +49,8 @@ Recall combines lexical and vector candidates, verifies the active tenant/fence/
 - `answer` contains only the highest-priority admitted evidence item.
 - `evidence_count` and `evidence_refs` describe the broader bounded evidence set.
 - agents use `read` when they need exact source text or multiple premises.
+- agents should call `recall` silently before filesystem or shell searches used only to reconstruct missing conversation history; an empty recall should not be repeated in the same logical turn.
+- agents should inspect current files, Git, configuration, and runtime state directly whenever those authorities may have changed since the memory was written.
 
 SPM deliberately does not add a generative answer model or brittle entity-extraction heuristic to turn `hello im apollo` into a cosmetically normalized answer. The downstream agent can phrase the final response while preserving provenance.
 
@@ -71,6 +80,8 @@ Multiple refs from the same source remain separate and positionally aligned; the
 Revoked API keys and provider configurations disappear from the console and behave as deleted.
 
 A completed purge receipt is signed and persisted. Repeating the same idempotent operation returns the established result rather than advancing the generation twice.
+
+Targeted deletion also leaves a source tombstone inside the exact tenant, namespace, account epoch, and namespace generation. Once a source ID has a pending, completed, or not-found purge record, ingest cannot reuse that ID in the same generation and returns `409 SOURCE_ID_PURGED`. This prevents deleted source, job, candidate, lineage, or vector state from being resurrected behind an older purge receipt. The same ID can be used after a deliberate generation advance.
 
 ## Retention caveat
 

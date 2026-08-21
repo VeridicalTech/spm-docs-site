@@ -59,12 +59,20 @@ Memory mode and compression mode are separate:
 - Memory controls recall and ingest permissions.
 - Compression controls whether old eligible exchanges are removed before forwarding.
 - System/developer instructions, tool state, Responses reasoning, and Anthropic thinking are protected.
+- The two most recent eligible exchanges remain protected. Older exchanges are removed only when the injected best evidence is bound to a source in the removal set; empty, degraded, or unrelated recall falls back to passthrough.
+- Compression commits only after recall reports `status=recalled`, `gate_reason=passed`, and at least one admitted evidence source in the exact removal set.
+
+These continuity rules are deployed on Hosted Provider Proxy and included in the Local Proxy source prepared for `0.1.1`. Public npm `0.1.0` does not include them.
 
 The conservative fallback input budget is 8,192 estimated tokens. Requests below the budget, single-turn requests, or histories containing no safely removable complete exchange can correctly show 0% reduction.
+
+MCP-capable agents can silently call `recall`, then `read` when exact provenance is needed, if an earlier conversation decision or constraint is absent from active context. Current files, Git state, configuration, and runtime state remain authoritative and should still be inspected directly when they may have changed.
 
 ## Storage and deletion
 
 The authoritative store owns sources, extracted records, jobs, fences, and receipts. Retrieval indexes are derived and rebuildable. Clear memory advances the write fence, purges history through that fence, and verifies absence. Account closure adds credential revocation and final account-state transitions.
+
+Targeted purge and source enqueue share a tenant-and-namespace serialization boundary. A purge tombstone blocks the same source ID from being enqueued again in that memory generation, while a later generation may reuse it. This prevents an old purge receipt from masking newly resurrected source or vector state.
 
 Deletion does not imply that pre-existing backups, WAL, or replicas disappear before their documented rotation periods.
 

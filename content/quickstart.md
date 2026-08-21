@@ -58,11 +58,13 @@ Use this when the harness supports a custom Base URL and you do not want to vaul
 Requirements: Node.js `>=22.15`, an SPM key, and an upstream provider key.
 
 ```bash
-npm install --global @spmos/local-proxy
+npm install --global @spmos/local-proxy@0.1.0
 spm setup
 spm doctor
 spm start
 ```
+
+Public npm `0.1.0` predates `x-spm-continuity-state`, two-exchange protection, source-bound evidence matching, and visible-text capture allowlists. Those changes are prepared in public GitHub source for `0.1.1`, but npm publication is pending. Use Hosted Provider Proxy when these guarantees are required.
 
 In another terminal:
 
@@ -96,12 +98,13 @@ For hosted proxy requests, inspect:
 - `x-spm-memory-mode`
 - `x-spm-memory-state`
 - `x-spm-compression-mode`
+- `x-spm-continuity-state`
 - `x-spm-request-id`
 - `x-spm-receipt-id`
 
 Dashboard **Token savings** and **Recent request receipts** are backed by terminal hosted-gateway receipts.
 
-For Local Proxy, inspect its local `x-spm-*` response headers. Local Proxy requests do not currently create hosted gateway receipts and do not populate hosted gateway savings views.
+For Local Proxy, inspect its local `x-spm-*` response headers. Public npm `0.1.0` does not include `x-spm-continuity-state`; that header is prepared for `0.1.1`. Local Proxy requests do not currently create hosted gateway receipts and do not populate hosted gateway savings views.
 
 ## 4. Understand 0% reduction
 

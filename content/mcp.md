@@ -38,6 +38,17 @@ Pass tokens to `read` verbatim as a JSON array. Do not decode and re-serialize t
 
 When no evidence qualifies, recall returns an explicit empty/refused outcome with a machine-readable gate reason. It does not invent an answer.
 
+## Silent continuity policy
+
+SPM's MCP instructions ask capable agents to use memory without narrating the lookup:
+
+1. If an earlier decision, constraint, progress update, or rationale is missing from active context, call `recall` before asking the user to repeat it.
+2. Call `read` when the exact source text or additional premises are needed.
+3. Continue the task using the result; do not announce that memory was searched or restored.
+4. Do not repeat an empty recall in the same logical turn.
+
+Current files, Git state, configuration, and runtime observations remain authoritative when they may have changed since a memory was written. Tool instructions guide the client agent; SPM cannot force every third-party MCP runtime to follow them.
+
 ## Codex
 
 ```toml
@@ -67,13 +78,15 @@ Restart the client after adding a server so it reloads the tool catalog.
 
 ## Recommended round trip
 
-1. `remember` with a stable idempotency key.
+1. `remember` with a stable idempotency key and, when supplied, a source ID that has not already been deleted in the current memory generation.
 2. Poll `status` until the source is ready.
 3. `recall` using a natural-language question.
 4. Use `read` when the agent needs exact provenance or additional premises.
 5. `delete` test data when the workflow is complete.
 
 The MCP service is memory-only. It does not proxy your model request and does not require an upstream provider key.
+
+After targeted deletion, reusing the same `source_id` in the same memory generation fails closed with `409 SOURCE_ID_PURGED`. Advancing to a new memory generation permits that ID again. Use a new source ID for genuinely new content instead of trying to resurrect a deleted identity.
 
 ## Health
 

@@ -9,6 +9,7 @@ title: Changelog
 ### Added
 
 - Published `@spmos/local-proxy` for loopback provider credential custody, with Codex/Claude configuration output, local token isolation, DNS-pinned HTTPS forwarding, and hosted SPM recall/ingest.
+- Prepared `@spmos/local-proxy@0.1.1` source with source-bound continuity, two-exchange protection, visible-text capture allowlists, role provenance, Unicode-safe source chunking, and `0.1.0` identity compatibility. npm publication remains pending.
 - Added a complete public distinction between hosted Provider Proxy, MCP, and Local Proxy.
 
 ### Changed
@@ -26,6 +27,10 @@ title: Changelog
 - Recall `answer` now renders one best evidence item instead of concatenating unrelated sources.
 - Source-span read tokens return the exact selected span; extracted records return their verified backing source.
 - Dashboard Token savings and Recent request receipts now read the terminal hosted-gateway receipt authority.
+- Hosted deterministic compression now protects the two most recent eligible exchanges and requires source-bound continuity evidence before removing older history; empty, degraded, or unrelated recall safely falls back to passthrough. Equivalent Local Proxy behavior is prepared for `0.1.1` but not in npm `0.1.0`.
+- Hosted captures now use content-stable source identities for exact repeats, preserve public-ingest role provenance, and suppress standalone assistant context-loss refusals from recall candidates. Equivalent Local Proxy behavior is prepared for `0.1.1` but not in npm `0.1.0`.
+- MCP instructions now direct agents to recall missing conversation history silently while keeping current files, Git, configuration, and runtime state authoritative.
+- Targeted purge tombstones now reject same-generation source-ID reuse with `409 SOURCE_ID_PURGED`; a later memory generation may reuse the ID.
 
 ## 2026-08-20
 
