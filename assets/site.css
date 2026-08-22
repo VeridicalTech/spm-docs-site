@@ -141,13 +141,6 @@ body {
   color: var(--faint);
 }
 
-/* ---- reveal on load ---- */
-.reveal { animation: page-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
-@keyframes page-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: none; }
-}
-
 /* ---- typography ---- */
 h1 { font-size: 30px; letter-spacing: -0.02em; margin: 0 0 18px; }
 h2 {
@@ -375,6 +368,5 @@ blockquote {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal { animation: none; }
   * { transition: none !important; }
 }

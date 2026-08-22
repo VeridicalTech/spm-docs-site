@@ -260,11 +260,11 @@ def main() -> None:
         shutil.rmtree(DIST)
     (DIST / "assets").mkdir(parents=True)
 
-    shutil.copytree(ROOT / "assets", DIST / "assets", dirs_exist_ok=True)
+    for name in ("site.css", "site.js", "social-icons.svg"):
+        shutil.copy(ROOT / "assets" / name, DIST / "assets" / name)
     for name in (
-        "orbit_light_upscaled.webp",
-        "orbit-mark-light.webp",
-        "orbit-wordmark-light.webp",
+        "orbit-favicon-64.webp",
+        "orbit-lockup-186.webp",
         "orbit-light-transparent.png",
     ):
         shutil.copy(WEB_PUBLIC / name, DIST / "assets" / name)

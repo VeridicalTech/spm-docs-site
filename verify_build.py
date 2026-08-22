@@ -64,6 +64,15 @@ def main() -> None:
         require("Published <time" in document, f"{output.name}: visible publication date missing")
         require("Last reviewed <time" in document, f"{output.name}: visible review date missing")
         require("Applies to" in document, f"{output.name}: visible version scope missing")
+        require('class="content reveal"' not in document, f"{output.name}: delayed reveal remains")
+        require(
+            'src="/assets/orbit-lockup-186.webp"' in document,
+            f"{output.name}: optimized header lockup missing",
+        )
+        require(
+            'href="/assets/orbit-favicon-64.webp"' in document,
+            f"{output.name}: optimized favicon missing",
+        )
 
         scripts = re.findall(
             r'<script\s+type="application/ld\+json">(.*?)</script>',
@@ -111,6 +120,27 @@ def main() -> None:
         "bounded public cache policy missing",
     )
 
+    optimized_assets = {
+        "orbit-favicon-64.webp": 8_000,
+        "orbit-lockup-186.webp": 8_000,
+    }
+    for name, maximum_bytes in optimized_assets.items():
+        asset = DIST / "assets" / name
+        require(asset.is_file(), f"missing optimized asset: {name}")
+        require(
+            asset.stat().st_size <= maximum_bytes,
+            f"optimized asset too large: {name} is {asset.stat().st_size} bytes",
+        )
+
+    require(
+        not (DIST / "assets" / "orbit-mark-light.webp").exists(),
+        "oversized favicon was copied into the public build",
+    )
+    require(
+        not (DIST / "assets" / "orbit_light_upscaled.webp").exists(),
+        "unused upscaled logo was copied into the public build",
+    )
+
     llms = (DIST / "llms.txt").read_text(encoding="utf-8")
     require("<html" not in llms.lower(), "llms.txt contains HTML")
     for entity in ("SPM", "SPMOS.ai", "SPM-Polaris", "StellarPath Memory Operating System"):
@@ -119,6 +149,8 @@ def main() -> None:
     not_found = (DIST / "404.html").read_text(encoding="utf-8")
     require('content="noindex, follow"' in not_found, "404.html must be noindex")
     require("Page not found" in not_found, "404.html content missing")
+    require('src="/assets/orbit-lockup-186.webp"' in not_found, "404 optimized lockup missing")
+    require('href="/assets/orbit-favicon-64.webp"' in not_found, "404 optimized favicon missing")
 
     home = (DIST / "index.html").read_text(encoding="utf-8")
     for entity in ("SPM", "SPMOS.ai", "SPM-Polaris", "StellarPath Memory Operating System"):
