@@ -234,6 +234,11 @@ def write_machine_files(pages: list[tuple[str, dict[str, str]]]) -> None:
         "User-agent: *\nAllow: /\n\nSitemap: https://docs.spmos.ai/sitemap.xml\n",
         encoding="utf-8",
     )
+    (DIST / "_headers").write_text(
+        "/*\n"
+        "  Cache-Control: public, max-age=300, stale-while-revalidate=300, stale-if-error=86400\n",
+        encoding="utf-8",
+    )
     (DIST / "llms.txt").write_text(
         "# SPM Documentation\n\n"
         "> Official technical documentation for SPM, the StellarPath Memory Operating System.\n\n"

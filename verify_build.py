@@ -104,6 +104,13 @@ def main() -> None:
     require("<html" not in robots.lower(), "robots.txt contains HTML")
     require("Sitemap: https://docs.spmos.ai/sitemap.xml" in robots, "robots.txt sitemap missing")
 
+    headers = (DIST / "_headers").read_text(encoding="utf-8")
+    require(
+        "Cache-Control: public, max-age=300, stale-while-revalidate=300, stale-if-error=86400"
+        in headers,
+        "bounded public cache policy missing",
+    )
+
     llms = (DIST / "llms.txt").read_text(encoding="utf-8")
     require("<html" not in llms.lower(), "llms.txt contains HTML")
     for entity in ("SPM", "SPMOS.ai", "SPM-Polaris", "StellarPath Memory Operating System"):
