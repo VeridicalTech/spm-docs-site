@@ -1,5 +1,9 @@
 ---
 title: Local Proxy
+description: Install and operate the SPM Local Proxy while keeping the provider credential and provider traffic on a machine you control.
+published: 2026-08-21
+updated: 2026-08-22
+applies_to: SPM-Polaris V3.0.0 and @spmos/local-proxy 0.1.x
 ---
 
 # Local Proxy

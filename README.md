@@ -16,7 +16,12 @@ to `dist/` by `build.py`. No JS framework.
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/python build.py      # outputs dist/
+.venv/bin/python verify_build.py
 ```
+
+The build fails when the page inventory and navigation differ or when required
+page metadata is missing. Verification checks unique metadata, self-canonicals,
+JSON-LD, the XML sitemap, text machine files, and the custom 404 document.
 
 Deploy target: Cloudflare Pages project `spmos-docs` (custom domain
 `docs.spmos.ai`), production branch `main`.

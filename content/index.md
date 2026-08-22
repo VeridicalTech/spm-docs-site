@@ -1,10 +1,17 @@
 ---
 title: SPM Documentation
+description: Official documentation for SPM and SPM-Polaris V3.0.0, including Hosted Provider Proxy, Local Proxy, MCP, governed memory, evidence, and operations.
+published: 2026-08-19
+updated: 2026-08-22
+applies_to: SPM-Polaris V3.0.0
+schema: WebPage
 ---
 
 # SPM Documentation
 
 **SPM** is the StellarPath Memory Operating System: a hosted, evidence-gated memory plane for AI agents. It adds durable memory, bounded recall, deterministic context compression, deletion controls, and auditable token accounting around the model provider you already use.
+
+**SPM-Polaris V3.0.0** is the current production SPM product. **SPMOS.ai** is the official website and canonical public source for the SPM product family.
 
 The memory plane is hosted. You can choose where the upstream provider credential lives:
 
@@ -39,10 +46,12 @@ Provider reasoning, Anthropic thinking, redacted thinking, tool arguments, and o
 
 ## Start here
 
+- [Choose an integration](integrations.html) — compare credential, traffic, data, receipt, and operating boundaries
 - [Quickstart](quickstart.html) — choose hosted forwarding, Local Proxy, or MCP
 - [Bring your own provider](providers.html) — provider/model configuration and credential boundaries
 - [Local Proxy](local-proxy.html) — install `@spmos/local-proxy`
 - [Provider Proxy API](proxy-api.html) — memory/compression modes, receipts, and errors
 - [MCP server](mcp.html) — `remember`, `recall`, `read`, `delete`, and `status`
 - [Memory, evidence & deletion](memory.html) — trust, best-evidence answers, and purge behavior
+- [Security](security.html) — isolation, credential custody, capture, refusal, deletion, and shared responsibilities
 - [Benchmarks](benchmarks.html) — measured evidence and explicit limits

@@ -1,5 +1,9 @@
 ---
 title: Architecture
+description: Architecture of SPM-Polaris V3.0.0 across hosted memory, provider traffic, recall, compression, storage, deletion, and failure behavior.
+published: 2026-08-19
+updated: 2026-08-22
+applies_to: SPM-Polaris V3.0.0
 ---
 
 # Architecture

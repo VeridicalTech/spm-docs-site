@@ -1,5 +1,9 @@
 ---
 title: Changelog
+description: Dated public changes to SPM interfaces, behavior, documentation, and supported integration boundaries.
+published: 2026-08-19
+updated: 2026-08-22
+applies_to: SPM public releases
 ---
 
 # Changelog

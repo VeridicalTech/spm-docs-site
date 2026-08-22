@@ -1,5 +1,10 @@
 ---
 title: Terms of Service
+description: Terms governing access to SPMOS.ai and SPM services, including accounts, providers, acceptable use, billing, availability, and liability boundaries.
+published: 2026-08-20
+updated: 2026-08-22
+applies_to: SPM services
+schema: WebPage
 ---
 
 # Terms of Service

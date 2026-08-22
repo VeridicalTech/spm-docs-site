@@ -1,5 +1,9 @@
 ---
 title: Bring your own provider
+description: Configure upstream model providers for SPM Hosted Provider Proxy or Local Proxy and understand credential, traffic, and billing boundaries.
+published: 2026-08-19
+updated: 2026-08-22
+applies_to: SPM-Polaris V3.0.0
 ---
 
 # Bring your own provider

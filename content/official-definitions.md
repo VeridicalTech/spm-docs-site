@@ -1,5 +1,9 @@
 ---
 title: Official definitions
+description: Canonical definitions and versioned relationships for SPM, SPMOS.ai, SPM-Polaris, and Veridical Tech, Inc.
+published: 2026-08-22
+updated: 2026-08-22
+applies_to: SPM-Polaris V3.0.0
 ---
 
 # Official definitions
@@ -55,8 +59,8 @@ These definitions were reviewed for SPM-Polaris V3.0.0. Technical behavior is de
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  "@id": "https://docs.spmos.ai/official-definitions.html#faq",
-  "url": "https://docs.spmos.ai/official-definitions.html",
+  "@id": "https://docs.spmos.ai/official-definitions#faq",
+  "url": "https://docs.spmos.ai/official-definitions",
   "inLanguage": "en",
   "mainEntity": [
     {

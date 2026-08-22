@@ -1,5 +1,9 @@
 ---
 title: Quickstart
+description: Start with SPM Hosted Provider Proxy, Local Proxy, or MCP and verify the chosen credential and memory boundary.
+published: 2026-08-19
+updated: 2026-08-22
+applies_to: SPM-Polaris V3.0.0
 ---
 
 # Quickstart

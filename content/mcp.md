@@ -1,5 +1,9 @@
 ---
 title: MCP server
+description: Connect an MCP client to SPM memory tools for governed remember, recall, read, delete, and status operations.
+published: 2026-08-19
+updated: 2026-08-22
+applies_to: SPM-Polaris V3.0.0
 ---
 
 # MCP server

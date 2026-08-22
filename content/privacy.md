@@ -1,5 +1,10 @@
 ---
 title: Privacy Policy
+description: Privacy policy for SPMOS.ai and SPM services, including account, model-traffic, memory, provider, billing, retention, and user-rights boundaries.
+published: 2026-08-20
+updated: 2026-08-22
+applies_to: SPM services
+schema: WebPage
 ---
 
 # Privacy Policy
