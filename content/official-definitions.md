@@ -37,6 +37,7 @@ These definitions were reviewed for SPM-Polaris V3.0.0. Technical behavior is de
 - [Bring your own provider](providers.html)
 - [Provider proxy API](proxy-api.html)
 - [Benchmarks](benchmarks.html)
+- [SPM-Polaris technical report](technical-report.html)
 
 <script type="application/ld+json">
 {

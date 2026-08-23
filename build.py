@@ -62,6 +62,7 @@ PAGES = [
     ("benchmarks", "Reference", "Benchmarks"),
     ("faq", "Reference", "FAQ"),
     ("changelog", "Reference", "Changelog"),
+    ("technical-report", "", "Technical report"),
     ("privacy", "", "Privacy Policy"),
     ("terms", "", "Terms of Service"),
 ]
@@ -276,7 +277,7 @@ def write_machine_files(pages: list[tuple[str, dict[str, str]]]) -> None:
         + "\n".join(
             f"- [{metadata['title']}]({canonical_url(slug)}): {metadata['description']}"
             for slug, metadata in pages
-            if slug in {"index", "official-definitions", "integrations", "architecture", "security", "benchmarks", "changelog"}
+            if slug in {"index", "official-definitions", "integrations", "architecture", "security", "benchmarks", "technical-report", "changelog"}
         )
         + "\n",
         encoding="utf-8",

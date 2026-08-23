@@ -22,6 +22,8 @@ This page reports only currently valid evidence. Historical scores measured on a
 
 These are observations, not guarantees. Network distance, corpus size, provider latency, cold span indexing, protected protocol state, and request shape all affect results.
 
+The [SPM-Polaris technical report](technical-report.html) places these bounded observations in the larger architecture, integration, deletion, and evaluation context.
+
 ## When token reduction appears
 
 Deterministic compression needs both:
