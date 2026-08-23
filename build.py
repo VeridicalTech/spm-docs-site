@@ -206,6 +206,7 @@ def render_page(slug: str, metadata: dict[str, str], body_html: str) -> str:
     description = metadata["description"]
     url = canonical_url(slug)
     page_type = "article" if metadata.get("schema", "TechArticle") == "TechArticle" else "website"
+    social_image = metadata.get("social_image", SOCIAL_IMAGE)
     breadcrumb = ""
     if slug != "index":
         breadcrumb = (
@@ -228,7 +229,7 @@ def render_page(slug: str, metadata: dict[str, str], body_html: str) -> str:
         .replace("{{DESCRIPTION}}", html.escape(description, quote=True))
         .replace("{{CANONICAL_URL}}", html.escape(url, quote=True))
         .replace("{{OG_TYPE}}", page_type)
-        .replace("{{SOCIAL_IMAGE}}", SOCIAL_IMAGE)
+        .replace("{{SOCIAL_IMAGE}}", html.escape(social_image, quote=True))
         .replace("{{PUBLISHED}}", html.escape(metadata["published"], quote=True))
         .replace("{{UPDATED}}", html.escape(metadata["updated"], quote=True))
         .replace("{{STRUCTURED_DATA}}", structured_data(slug, metadata, body_html))
@@ -297,6 +298,8 @@ def main() -> None:
         "orbit-light-transparent.png",
     ):
         shutil.copy(WEB_PUBLIC / name, DIST / "assets" / name)
+    for name in ("spmos-technical-report-social.png",):
+        shutil.copy(ROOT / "assets" / "social" / name, DIST / "assets" / name)
 
     expected_slugs = [slug for slug, _, _ in PAGES]
     actual_slugs = sorted(path.stem for path in CONTENT.glob("*.md"))

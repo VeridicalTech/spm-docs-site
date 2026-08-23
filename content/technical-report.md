@@ -4,6 +4,7 @@ description: First-party SPM-Polaris V3.0.0 report on evidence-governed memory, 
 published: 2026-08-23
 updated: 2026-08-23
 applies_to: SPM-Polaris V3.0.0; evidence cutoff 2026-08-23
+social_image: https://docs.spmos.ai/assets/spmos-technical-report-social.png
 ---
 
 # SPM-Polaris: Evidence-Governed Memory and Context Management for Long-Horizon AI Agents

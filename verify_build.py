@@ -76,6 +76,12 @@ def main() -> None:
             'href="/assets/orbit-favicon-64.webp"' in document,
             f"{output.name}: optimized favicon missing",
         )
+        if slug == "technical-report":
+            require(
+                'content="https://docs.spmos.ai/assets/spmos-technical-report-social.png"'
+                in document,
+                "technical-report.html: dedicated social card missing",
+            )
 
         scripts = re.findall(
             r'<script\s+type="application/ld\+json">(.*?)</script>',
