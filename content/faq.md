@@ -2,14 +2,24 @@
 title: FAQ
 description: Answers about SPM hosting, Local Proxy, MCP, provider billing, memory refusal, evidence, compression, privacy, deletion, and availability.
 published: 2026-08-19
-updated: 2026-08-22
+updated: 2026-08-23
 applies_to: SPM-Polaris V3.0.0
+schema: FAQPage
 ---
 
 # FAQ
 
 ## Is SPM self-hosted?
 The SPM memory plane is hosted. Local Proxy is an optional local provider-traffic component, not a self-hosted or offline edition of SPM.
+
+## How does SPM differ from retrieval-only memory?
+Retrieval-only systems return candidates. The current SPM-Polaris release evaluates candidates against tenant, namespace, scope, provenance, and evidence rules before admission. If no candidate survives, it returns `UNKNOWN` and injects no memory.
+
+## Does SPM-Polaris add a generative LLM call to the memory path?
+For SPM-Polaris V3.0.0, the memory path adds no generative LLM call. Admission, compression, lifecycle, refusal, and receipts are governed by deterministic logic; dedicated embedding and reranking models may process relevant source, query, and candidate text. The configured provider still performs the requested model inference.
+
+## Where do provider credentials and model traffic go?
+SPM-Polaris supports three integration boundaries. Hosted Provider Proxy places the provider credential and model traffic in the SPM-hosted request path. Local Proxy keeps the provider credential and provider traffic on the machine you operate, while the SPM API key and eligible query or memory content still use the hosted memory plane unless memory mode is disabled. MCP keeps inference and provider credentials in the application and sends only explicit memory-tool content to hosted SPM.
 
 ## Must SPM store my provider key?
 No. Hosted Provider Proxy vaults it in SPM. Local Proxy keeps it in a protected local config and sends it directly to the configured upstream.
@@ -43,9 +53,6 @@ It is the highest-priority admitted evidence item, not an LLM-generated synthesi
 
 ## Where are Local Proxy receipts shown?
 Local Proxy exposes per-request `x-spm-*` headers. It does not currently create hosted gateway receipts or populate hosted Dashboard savings/receipt views.
-
-## Does SPM add a generative model call to recall?
-No generative answer model is added to the recall path. Evidence admission and best-evidence rendering are deterministic.
 
 ## What happens when no memory qualifies?
 Recall fails closed with an explicit empty/refused state and gate reason. It does not invent supporting memory.

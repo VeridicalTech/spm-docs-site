@@ -42,7 +42,9 @@ SOCIAL_IMAGE = "https://docs.spmos.ai/assets/orbit-light-transparent.png"
 # checkout next to it.
 WEB_PUBLIC = ROOT / "assets" / "logo"
 
-# Sidebar order. (slug, section, title)
+# Page inventory and sidebar order. An empty section keeps the page public while
+# leaving navigation to the global footer.
+# (slug, section, title)
 PAGES = [
     ("index", "Start", "Overview"),
     ("integrations", "Start", "Choose an integration"),
@@ -60,8 +62,8 @@ PAGES = [
     ("benchmarks", "Reference", "Benchmarks"),
     ("faq", "Reference", "FAQ"),
     ("changelog", "Reference", "Changelog"),
-    ("privacy", "Legal", "Privacy Policy"),
-    ("terms", "Legal", "Terms of Service"),
+    ("privacy", "", "Privacy Policy"),
+    ("terms", "", "Terms of Service"),
 ]
 
 MD_EXTENSIONS = ["fenced_code", "tables", "toc", "attr_list", "sane_lists"]
@@ -70,6 +72,10 @@ VERSIONED_SCOPED_PACKAGE = re.compile(
 )
 INTERNAL_HTML_LINK = re.compile(
     r'href="(?P<slug>[a-z0-9-]+)\.html(?P<suffix>(?:[?#][^"]*)?)"'
+)
+FAQ_SECTION = re.compile(
+    r"<h2(?:\s+[^>]*)?>(?P<question>.*?)</h2>\s*<p>(?P<answer>.*?)</p>",
+    re.IGNORECASE | re.DOTALL,
 )
 
 REQUIRED_METADATA = {"title", "description", "published", "updated", "applies_to"}
@@ -109,7 +115,12 @@ def canonical_url(slug: str) -> str:
     return f"{SITE_URL}/" if slug == "index" else f"{SITE_URL}/{slug}"
 
 
-def structured_data(slug: str, metadata: dict[str, str]) -> str:
+def plain_text(fragment: str) -> str:
+    text = html.unescape(re.sub(r"<[^>]+>", "", fragment))
+    return " ".join(text.split())
+
+
+def structured_data(slug: str, metadata: dict[str, str], body_html: str) -> str:
     url = canonical_url(slug)
     page_type = metadata.get("schema", "TechArticle")
     page = {
@@ -128,6 +139,21 @@ def structured_data(slug: str, metadata: dict[str, str]) -> str:
     }
     if page_type == "TechArticle":
         page["proficiencyLevel"] = "Developer"
+    if page_type == "FAQPage":
+        questions = [
+            {
+                "@type": "Question",
+                "name": plain_text(match.group("question")),
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": plain_text(match.group("answer")),
+                },
+            }
+            for match in FAQ_SECTION.finditer(body_html)
+        ]
+        if not questions:
+            sys.exit(f"{slug}: FAQPage schema requires question-and-answer sections")
+        page["mainEntity"] = questions
     breadcrumbs = [
         {"@type": "ListItem", "position": 1, "name": "SPM Documentation", "item": f"{SITE_URL}/"}
     ]
@@ -166,6 +192,8 @@ def structured_data(slug: str, metadata: dict[str, str]) -> str:
 def render_page(slug: str, metadata: dict[str, str], body_html: str) -> str:
     sections: dict[str, list[tuple[str, str, str]]] = {}
     for s, section, t in PAGES:
+        if not section:
+            continue
         sections.setdefault(section, []).append((s, t, "active" if s == slug else ""))
     nav = []
     for section, items in sections.items():
@@ -202,7 +230,7 @@ def render_page(slug: str, metadata: dict[str, str], body_html: str) -> str:
         .replace("{{SOCIAL_IMAGE}}", SOCIAL_IMAGE)
         .replace("{{PUBLISHED}}", html.escape(metadata["published"], quote=True))
         .replace("{{UPDATED}}", html.escape(metadata["updated"], quote=True))
-        .replace("{{STRUCTURED_DATA}}", structured_data(slug, metadata))
+        .replace("{{STRUCTURED_DATA}}", structured_data(slug, metadata, body_html))
         .replace("{{SYSTEM_NAME}}", html.escape(SYSTEM_NAME))
         .replace("{{PRODUCT_NAME}}", html.escape(PRODUCT_NAME))
         .replace("{{PRODUCT_VERSION}}", html.escape(PRODUCT_VERSION))

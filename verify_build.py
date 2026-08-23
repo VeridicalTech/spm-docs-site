@@ -44,7 +44,10 @@ def main() -> None:
         output = DIST / f"{slug}.html"
         require(output.is_file(), f"{output.name} is missing")
         document = output.read_text(encoding="utf-8")
-        require("{{" not in document and "}}" not in document, f"{output.name}: unresolved template token")
+        require(
+            re.search(r"\{\{[A-Z][A-Z0-9_]*\}\}", document) is None,
+            f"{output.name}: unresolved template token",
+        )
 
         title = match_one(r"<title>(.*?)</title>", document, f"{output.name} title")
         description = match_one(
@@ -89,9 +92,41 @@ def main() -> None:
         serialized = json.dumps(parsed)
         require("BreadcrumbList" in serialized, f"{output.name}: BreadcrumbList missing")
         require(
-            "TechArticle" in serialized or "WebPage" in serialized,
+            any(schema in serialized for schema in ("TechArticle", "WebPage", "FAQPage")),
             f"{output.name}: supported page schema missing",
         )
+        if slug == "official-definitions":
+            require("DefinedTermSet" in serialized, "official-definitions.html: DefinedTermSet missing")
+            require("FAQPage" not in serialized, "official-definitions.html: FAQPage must belong to FAQ")
+        if slug == "faq":
+            faq_pages = []
+            for item in parsed:
+                if not isinstance(item, dict):
+                    continue
+                if item.get("@type") == "FAQPage":
+                    faq_pages.append(item)
+                faq_pages.extend(
+                    node
+                    for node in item.get("@graph", [])
+                    if isinstance(node, dict) and node.get("@type") == "FAQPage"
+                )
+            require(len(faq_pages) == 1, "faq.html: expected one FAQPage schema")
+            questions = faq_pages[0].get("mainEntity", [])
+            heading_count = len(re.findall(r"<h2\b", document, re.IGNORECASE))
+            require(
+                len(questions) == heading_count,
+                "faq.html: visible questions and FAQPage entries differ",
+            )
+            require(
+                all(
+                    question.get("@type") == "Question"
+                    and question.get("name")
+                    and question.get("acceptedAnswer", {}).get("@type") == "Answer"
+                    and question.get("acceptedAnswer", {}).get("text")
+                    for question in questions
+                ),
+                "faq.html: incomplete FAQPage question or answer",
+            )
 
         titles.add(title)
         descriptions.add(description)
@@ -155,6 +190,15 @@ def main() -> None:
     home = (DIST / "index.html").read_text(encoding="utf-8")
     for entity in ("SPM", "SPMOS.ai", "SPM-Polaris", "StellarPath Memory Operating System"):
         require(entity in home, f"index.html missing {entity}")
+
+    security = (DIST / "security.html").read_text(encoding="utf-8")
+    require("SPM applies security controls" in security, "security.html: SPM security subject missing")
+    require("SPM-Polaris V3.0.0 release" in security, "security.html: implementation scope missing")
+
+    sidebar_sample = (DIST / "index.html").read_text(encoding="utf-8")
+    require('<p class="nav-section">Legal</p>' not in sidebar_sample, "Legal must not be a sidebar section")
+    require('href="/privacy"' in sidebar_sample, "Privacy footer link missing")
+    require('href="/terms"' in sidebar_sample, "Terms footer link missing")
 
     print(f"PASS {len(slugs)} pages, {len(canonicals)} canonicals, and 4 machine/error files verified")
 

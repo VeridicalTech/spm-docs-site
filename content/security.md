@@ -1,14 +1,14 @@
 ---
 title: Security
-description: Security boundaries for SPM-Polaris V3.0.0, including tenant isolation, credential custody, memory admission, provider forwarding, deletion evidence, and shared responsibilities.
+description: Security boundaries for SPM as implemented by SPM-Polaris V3.0.0, including tenant isolation, credential custody, memory admission, provider forwarding, deletion evidence, and shared responsibilities.
 published: 2026-08-22
-updated: 2026-08-22
+updated: 2026-08-23
 applies_to: SPM-Polaris V3.0.0
 ---
 
 # Security
 
-SPM-Polaris applies security controls at the tenant, credential, provider-traffic, memory-admission, and deletion boundaries. This page describes the product boundary; it is not a certification or a substitute for reviewing your provider, deployment, and data-handling requirements.
+SPM applies security controls at the tenant, credential, provider-traffic, memory-admission, and deletion boundaries. This page describes how those controls are implemented in the current SPM-Polaris V3.0.0 release; it is not a certification or a substitute for reviewing your provider, deployment, and data-handling requirements.
 
 ## Trust boundaries
 

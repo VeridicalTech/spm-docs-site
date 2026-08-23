@@ -56,6 +56,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 3px 8px;
+  transform: translateY(1px);
 }
 .topnav { display: flex; gap: 24px; }
 .topnav a {
