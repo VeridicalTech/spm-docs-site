@@ -2,7 +2,7 @@
 title: Benchmarks
 description: Current SPM-Polaris benchmark evidence, measurement boundaries, reproducibility requirements, result limitations, and invalid historical comparisons.
 published: 2026-08-19
-updated: 2026-08-22
+updated: 2026-08-26
 applies_to: SPM-Polaris V3.0.0
 ---
 
@@ -19,10 +19,23 @@ This page reports only currently valid evidence. Historical scores measured on a
 | New MCP memory readiness | 8.23 seconds to ready | One production remember/status round trip |
 | MCP read integrity | Stored and read text matched byte-for-byte | Production remember → status → recall → read |
 | Warm historical MCP recall | 4.93 seconds | One warm production observation; not an SLO |
+| Agentic tool-output removal | 43k–53k fewer input tokens per request (about 85% of removable tool output); upstream response from ~2 minutes to ~35 seconds | Sampled production agentic sessions, 2026-08 |
 
-These are observations, not guarantees. Network distance, corpus size, provider latency, cold span indexing, protected protocol state, and request shape all affect results.
+These are observations, not guarantees. Network distance, corpus size, provider latency, cold span indexing, protected protocol state, and request shape all affect results. The compression figures include provider, tunnel, indexing, and queuing costs; they are not an isolated measurement of SPM overhead and must not be extrapolated to every request. Short or new conversations correctly show zero reduction, and when protected state cannot be safely changed, the per-request receipt marks the request as fully preserved.
 
 The [SPM-Polaris technical report](technical-report.html) places these bounded observations in the larger architecture, integration, deletion, and evaluation context.
+
+## Recall depth: cost–quality Pareto
+
+Frozen probe, 2026-08-25, two arms, reproducible in the repository:
+
+| Depth | Unanswerable questions refused | Answerable questions hit | Provider tokens | Typical latency |
+|-------|-------------------------------|--------------------------|-----------------|-----------------|
+| fast | 23/23 | 15/15 | 0 | ~3 ms |
+| auto (default) | all passed | all passed | only ~55% low-confidence queries pay; 52–66% of deep cost | ~3.5 ms |
+| deep | all passed | all passed | highest (multi-round evidence collection) | ~1.3 s |
+
+The zero-cost fast path already refuses every unanswerable question in this probe. Auto preserves quality while paying only for queries that genuinely need deep evidence collection; deep retains multi-round capability for the hardest multi-hop questions. Chinese and English memory recall are both verified in production on fast and deep paths.
 
 ## When token reduction appears
 

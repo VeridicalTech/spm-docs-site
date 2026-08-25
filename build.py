@@ -60,6 +60,8 @@ PAGES = [
     ("architecture", "Reference", "Architecture"),
     ("security", "Reference", "Security"),
     ("benchmarks", "Reference", "Benchmarks"),
+    ("compare", "Reference", "Compare"),
+    ("roadmap", "Reference", "Roadmap"),
     ("faq", "Reference", "FAQ"),
     ("changelog", "Reference", "Changelog"),
     ("technical-report", "", "Technical report"),

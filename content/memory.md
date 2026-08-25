@@ -2,7 +2,7 @@
 title: Memory, evidence & deletion
 description: How SPM writes, retrieves, admits, reads, and deletes memory with provenance, evidence gates, scopes, and verifiable lifecycle controls.
 published: 2026-08-19
-updated: 2026-08-22
+updated: 2026-08-26
 applies_to: SPM-Polaris V3.0.0
 ---
 
@@ -63,6 +63,22 @@ When nothing qualifies:
 ```text
 UNKNOWN — no supporting memory found.
 ```
+
+## Recall depth (fast / auto / deep)
+
+Recall runs at three depths:
+
+- **fast** — lexical/vector evidence gate only; zero provider tokens.
+- **auto** (default) — confidence-based routing: high-confidence queries stay on the fast path; only low-confidence queries escalate to deep evidence collection.
+- **deep** — multi-round evidence collection for the hardest multi-hop queries; this is the only depth that may spend provider tokens, and the spend is itemized on the request receipt.
+
+The default recall depth, capture switches, compression mode, input budget, and recall caps are tenant-level preferences, adjustable in console **Settings**; changes apply to all three integration paths in about a minute.
+
+## Memory evolution and quarantine
+
+Related facts consolidate into **observations**. When a preference or fact changes, the observation presents the current state and keeps its history — for example, “uses Vue (previously: React)” — with proof counts and provenance attached. Nothing is silently overwritten.
+
+Content captured automatically around proxied exchanges first lands in an isolated **quarantine ring** and is promoted into the main memory layer only after quality checks. Ambient agent noise therefore does not pollute long-term memory.
 
 ## Read tokens
 
