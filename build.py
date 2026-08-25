@@ -271,9 +271,9 @@ def write_machine_files(pages: list[tuple[str, dict[str, str]]]) -> None:
     )
     (DIST / "llms.txt").write_text(
         "# SPM Documentation\n\n"
-        "> Official technical documentation for SPM, the StellarPath Memory Operating System.\n\n"
-        "SPM-Polaris is the current production SPM product: a provider proxy with governed long-term memory for AI agents.\n"
-        "SPMOS.ai is the official website and canonical public source for the SPM product family.\n\n"
+        "> Official technical documentation for SPMOS, the StellarPath Memory Operating System.\n\n"
+        "SPM-Polaris is the current production SPMOS product: a provider proxy with governed long-term memory for AI agents.\n"
+        "SPMOS.ai is the official website and canonical public source of SPMOS. SPM is the approved short form of SPMOS, not a separate product or entity.\n\n"
         "## Primary pages\n\n"
         + "\n".join(
             f"- [{metadata['title']}]({canonical_url(slug)}): {metadata['description']}"
