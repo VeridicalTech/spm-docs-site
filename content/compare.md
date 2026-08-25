@@ -22,10 +22,12 @@ SPM-Polaris does not try to beat every adjacent product on every dimension. It f
 
 Snapshot of official pricing pages taken 2026-08-22:
 
-- Mem0 pricing: Free, Pro $19/month and higher tiers.
-- Supermemory pricing: Free with a $5 monthly credit, Pro $19/month, Scale $399/month.
-- Zep pricing: Free 10,000 credits/month, Flex $25 per 10k credits, Flex Plus $75 per 40k credits.
-- Letta's pricing page returned 404 at snapshot time and is not cited.
+| Product | Free tier | Paid tiers |
+|---------|-----------|------------|
+| Mem0 | Yes | Pro $19/month, and higher tiers |
+| Supermemory | $5 monthly credit included | Pro $19/month · Scale $399/month |
+| Zep | 10,000 credits/month | Flex $25 per 10k credits · Flex Plus $75 per 40k credits |
+| Letta | Pricing page returned 404 at snapshot time — not cited | — |
 
 Price is not a quality comparison. Credits, connectors, and enterprise terms differ across vendors, so unit economics cannot be concluded from monthly fees alone.
 
