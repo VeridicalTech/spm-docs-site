@@ -56,6 +56,7 @@ PAGES = [
     ("proxy-api", "Guides", "Provider proxy API"),
     ("memory", "Guides", "Memory, evidence & deletion"),
     ("mcp", "Guides", "MCP server"),
+    ("best-practices", "Guides", "Best practices"),
     ("official-definitions", "Reference", "Official definitions"),
     ("architecture", "Reference", "Architecture"),
     ("security", "Reference", "Security"),

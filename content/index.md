@@ -52,6 +52,7 @@ Provider reasoning, Anthropic thinking, redacted thinking, tool arguments, and o
 - [Local Proxy](local-proxy.html) — install `@spmos/local-proxy`
 - [Provider Proxy API](proxy-api.html) — memory/compression modes, receipts, and errors
 - [MCP server](mcp.html) — `remember`, `recall`, `read`, `delete`, and `status`
+- [Best practices](best-practices.html) — approachable patterns for reliable memory
 - [Memory, evidence & deletion](memory.html) — trust, best-evidence answers, and purge behavior
 - [Security](security.html) — isolation, credential custody, capture, refusal, deletion, and shared responsibilities
 - [Benchmarks](benchmarks.html) — measured evidence and explicit limits
