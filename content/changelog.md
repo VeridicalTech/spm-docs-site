@@ -10,6 +10,11 @@ applies_to: SPM public releases
 
 ## 2026-09-05
 
+- **`@spmos/local-proxy@0.1.3`**: end-user partitions reach the local path —
+  `spm.userPartition` config, `SPM_USER_PARTITION` env, or a per-request
+  `x-spm-user-partition` header (validated, fail-closed). `spm doctor` now
+  checks the node.js version, port availability, and — live — that the SPM API
+  accepts your key before you start.
 - **End-user partitions**: one API key can now serve many end users with
   isolated per-user memory spaces. Give the key the `memory:partition` scope and
   send a stable opaque `user_partition` on remember, recall, and read calls.

@@ -12,12 +12,12 @@ applies_to: SPM-Polaris V3.0.0 and @spmos/local-proxy 0.1.x
 
 It is **not** self-hosted SPM — your memory lives in the hosted service either way. What stays local is the provider credential and the full model traffic.
 
-Current npm release: **`@spmos/local-proxy@0.1.2`**. It adds the same conversation-continuity, capture-hygiene, and tool-output elision protections as the Hosted Provider Proxy.
+Current npm release: **`@spmos/local-proxy@0.1.3`**. It adds end-user partition support and a live `spm doctor` on top of the conversation-continuity, capture-hygiene, and tool-output elision protections shared with the Hosted Provider Proxy.
 
 ## Install
 
 ```bash
-npm install --global @spmos/local-proxy@0.1.2
+npm install --global @spmos/local-proxy@0.1.3
 spm setup
 spm doctor
 spm start
@@ -51,8 +51,27 @@ Your client—not the Local Proxy—chooses the model for each request.
 | Input budget | 8,192 estimated tokens |
 | Maximum recalled context | 512 estimated tokens |
 | SPM API | `https://api.spmos.ai` |
+| End-user partition | Empty (tenant default space) |
 
 Configuration is stored under `$SPM_CONFIG_HOME`, `$XDG_CONFIG_HOME/spm`, or `~/.config/spm`, with owner-only file permissions.
+
+## End-user partitions
+
+One SPM key can serve many end users with isolated memory spaces. The key needs
+the `memory:partition` scope. Three ways to select a partition, in increasing
+precedence:
+
+1. `spm.userPartition` in the configuration (the setup wizard asks for it);
+2. the `SPM_USER_PARTITION` environment variable;
+3. the per-request header `x-spm-user-partition`, so one Local Proxy can serve
+   many downstream users from a single process.
+
+Use a stable opaque id such as your internal user UUID — never a secret or a
+display name. An invalid header value fails the request closed with
+`400 spm_invalid_user_partition`; memory spaces are never mixed.
+
+`spm doctor` verifies the node.js version, port availability, and — live — that
+the SPM API is reachable and accepts your key, before you start the proxy.
 
 ## Client configuration
 

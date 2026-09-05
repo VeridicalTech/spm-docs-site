@@ -59,7 +59,7 @@ Use this when your agent supports a custom Base URL and you do not want to store
 Requirements: Node.js `>=22.15`, an SPM key, and an upstream provider key.
 
 ```bash
-npm install --global @spmos/local-proxy@0.1.2
+npm install --global @spmos/local-proxy@0.1.3
 spm setup
 spm doctor
 spm start
