@@ -2,13 +2,13 @@
 title: Quickstart
 description: Start with SPM Hosted Provider Proxy, Local Proxy, or MCP and verify the chosen credential and memory boundary.
 published: 2026-08-19
-updated: 2026-08-22
+updated: 2026-09-05
 applies_to: SPM-Polaris V3.0.0
 ---
 
 # Quickstart
 
-Choose the integration that matches your credential boundary.
+Give your agent a lasting memory in three steps: create a key, choose how requests reach your model provider, and verify what happened.
 
 ## 1. Create an SPM key
 
@@ -17,28 +17,23 @@ Sign in at `https://app.spmos.ai`, open **API Keys**, and create a key. It is sh
 Recommended scopes:
 
 - Provider Proxy or Local Proxy with full memory: `memory:read` and `memory:write`
-- MCP explicit memory: add `memory:delete` only if the agent should delete sources
+- MCP explicit memory: add `memory:delete` only if the agent should delete memories
 - Hosted receipt lookup: add `receipt:read`
+- One key for several end users: add `memory:partition` and send a stable `user_partition` value
 
-The key's memory scopes determine the hosted proxy's default memory mode. A request can lower that mode, but it cannot grant itself a scope the key does not have.
+Your key's scopes set the strongest memory access it can use. A single request can temporarily use less, never more.
 
-## 2. Choose a provider path
+## 2. Choose how requests reach your provider
 
 ### Option A — Hosted Provider Proxy
 
-Use this when you want SPM to operate forwarding and hosted gateway receipts.
+The simplest path: SPM forwards your requests, and your dashboard shows token savings and receipts for every request.
 
-1. Open **Providers** in the console.
-2. Select one upstream configuration and one or more allowed models.
-3. For a preset provider, select models from the models.dev-backed catalog. Presets do not probe provider `/models`.
-4. For **Custom**, enter the Base URL, API style, key, and optional headers/query parameters. Custom channels can fetch the upstream model list.
-5. Store the channel. Provider secrets are vaulted and are never returned to the browser.
+1. In the console, open **Settings → Providers**.
+2. Choose a preset provider and the models you want, or add a **Custom** upstream with its Base URL, API style, key, and optional headers.
+3. Store it. Provider secrets are stored by SPM and never shown again.
 
-Point an OpenAI-compatible client at:
-
-```text
-https://api.spmos.ai/v1
-```
+Point your OpenAI-compatible client at SPM instead of the provider:
 
 ```python
 from openai import OpenAI
@@ -55,37 +50,31 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-### Option B — Local provider credential custody
+### Option B — Local Proxy (provider key stays on your machine)
 
-Use this when the harness supports a custom Base URL and you do not want to vault the upstream provider key in SPM.
+Use this when your agent supports a custom Base URL and you do not want to store the provider key in SPM. The Local Proxy runs on your machine and sends the provider key directly to your provider; only memory lookups and eligible saved text use hosted SPM.
 
 Requirements: Node.js `>=22.15`, an SPM key, and an upstream provider key.
 
 ```bash
-npm install --global @spmos/local-proxy@0.1.0
+npm install --global @spmos/local-proxy@0.1.2
 spm setup
 spm doctor
 spm start
 ```
 
-Public npm `0.1.0` predates `x-spm-continuity-state`, two-exchange protection, source-bound evidence matching, and visible-text capture allowlists. Those changes are prepared in public GitHub source for `0.1.1`, but npm publication is pending. Use Hosted Provider Proxy when these guarantees are required.
-
 In another terminal:
 
 ```bash
 export SPM_LOCAL_PROXY_TOKEN="$(spm config token)"
-spm print-config codex
-# or
-spm print-config claude
+spm print-config codex   # or: spm print-config claude
 ```
-
-The harness sends its chosen model to Local Proxy. Local Proxy sends the provider key directly to the configured upstream, while recall queries and eligible memory content still go to hosted SPM.
 
 See [Local Proxy](local-proxy.html) before using custom headers or query parameters.
 
 ### Option C — MCP memory tools
 
-Use MCP when the agent should explicitly remember and recall while keeping its existing model transport:
+Use MCP when the agent should save and find memories explicitly, without changing how it sends model requests:
 
 ```toml
 [mcp_servers.spm]
@@ -95,33 +84,18 @@ headers = { Authorization = "Bearer spm_live_..." }
 
 The production server name is **SPM** and the tools are exactly `remember`, `recall`, `read`, `delete`, and `status`.
 
-## 3. Verify behavior
+## 3. Verify what happened
 
-For hosted proxy requests, inspect:
+- **Hosted proxy:** open the dashboard — **Token savings** and **Recent request receipts** show what each request did. Programmatic access: `GET /v1/spm/requests`.
+- **Local Proxy:** inspect the local `x-spm-*` response headers. Local Proxy requests do not create hosted receipts.
 
-- `x-spm-memory-mode`
-- `x-spm-memory-state`
-- `x-spm-compression-mode`
-- `x-spm-continuity-state`
-- `x-spm-request-id`
-- `x-spm-receipt-id`
+## 4. When will I see savings?
 
-Dashboard **Token savings** and **Recent request receipts** are backed by terminal hosted-gateway receipts.
-
-For Local Proxy, inspect its local `x-spm-*` response headers. Public npm `0.1.0` does not include `x-spm-continuity-state`; that header is prepared for `0.1.1`. Local Proxy requests do not currently create hosted gateway receipts and do not populate hosted gateway savings views.
-
-## 4. Understand 0% reduction
-
-The default deterministic input budget is 8,192 estimated tokens. Token reduction requires:
-
-1. a history above the active budget; and
-2. at least one complete old exchange that is safe to remove.
-
-Short histories, single-turn requests, provider-managed state, or histories composed only of protected system/tool/reasoning/thinking content can correctly show 0%.
+Savings appear when a conversation is long enough that its older parts are already stored as memory and can stop being resent. Short or new conversations correctly show no reduction — there was nothing safe to remove yet. This is expected behavior, not a malfunction.
 
 ## Next steps
 
+- [Your memory](memory.html)
 - [Provider Proxy API](proxy-api.html)
 - [Local Proxy](local-proxy.html)
 - [MCP server](mcp.html)
-- [Memory, evidence & deletion](memory.html)

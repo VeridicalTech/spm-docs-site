@@ -2,7 +2,7 @@
 title: Bring your own provider
 description: Configure upstream model providers for SPM Hosted Provider Proxy or Local Proxy and understand credential, traffic, and billing boundaries.
 published: 2026-08-19
-updated: 2026-08-22
+updated: 2026-09-05
 applies_to: SPM-Polaris V3.0.0
 ---
 
@@ -41,11 +41,16 @@ One active provider configuration represents one upstream Base URL, credential, 
 - Two active configurations under the same tenant and API style cannot claim the same model.
 - One upstream configuration can serve multiple models; do not create a new provider row solely to change model.
 
-## Presets and models.dev
+## Presets, auto-admission, and models.dev
 
-Preset provider model choices come from the reviewed models.dev-backed catalog. The catalog refreshes with stale-while-revalidate and a bundled fallback.
+The provider catalog is backed by models.dev and refreshes automatically with stale-while-revalidate plus a committed snapshot fallback.
 
-Discovery is not transport approval. A provider appearing in models.dev does not automatically bypass SPM's HTTPS, SSRF, data-retention, protocol, or cost review.
+Two tiers of providers appear in Settings:
+
+- **Preset providers** (major providers such as OpenAI, Anthropic, DeepSeek) carry curated metadata — console links, docs, and connection details.
+- **Auto-admitted providers**: when the live catalog lists a provider with a working HTTPS endpoint, a documented credential variable, and at least one chat-capable model, it becomes selectable without waiting for a review cycle. Pricing (input/output per 1M tokens), context window, and capability markers (reasoning, tool calling) refresh with the catalog.
+
+Auto-admission is not a safety bypass: every request still goes through the same HTTPS-only, public-IP-pinned, SSRF-checked transport, and an auto-admitted channel stores its catalog-provided endpoint at creation time. Providers whose catalog entry is incomplete (no usable endpoint or credential variable) remain discovery-only and are never routable.
 
 Preset providers do **not** live-fetch `/models`. This keeps the catalog stable and avoids provider-specific permission/cost surprises.
 
@@ -61,7 +66,7 @@ You configure:
 - default model and allowed models
 - optional custom headers and query parameters
 
-Only Custom channels can use **Fetch models**. For an existing channel, the server-only BFF reads the credential temporarily from the vault, performs the guarded probe, and returns model identifiers—not the credential—to the browser.
+Only Custom channels can use **Fetch models**. For an existing channel, the server-only BFF reads the credential temporarily from the vault, performs the guarded probe, and returns model identifiers—not the credential—to the browser. If the upstream has no model-list endpoint at all, you can also type a model ID in manually.
 
 Custom probes and forwarding enforce HTTPS and public-address DNS pinning. SPM, cookie, forwarding, Cloudflare/client-IP, and hop-by-hop headers are removed after caller and custom headers are merged; provider authentication is injected last.
 

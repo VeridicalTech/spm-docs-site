@@ -8,72 +8,58 @@ applies_to: SPM-Polaris V3.0.0
 
 # MCP server
 
-SPM exposes account-scoped memory as a stateless streamable HTTP MCP server:
+MCP gives a compatible agent five explicit tools to save, find, read, and delete your SPM memory — without changing how the agent talks to its model.
 
 ```text
 https://api.spmos.ai/mcp
 Authorization: Bearer spm_live_...
 ```
 
-The production server name is **SPM**. Tool names are exactly `remember`, `recall`, `read`, `delete`, and `status`; clients do not need product-version aliases.
+The production server name is **SPM**. Tool names are exactly `remember`, `recall`, `read`, `delete`, and `status`.
 
 ## Tools
 
-| Tool | Important parameters | Result |
-|------|----------------------|--------|
-| `remember` | `text`, `idempotency_key`, optional `source_id`, `topic`, and `user_partition` | Queues one source idempotently |
-| `status` | optional `source_ids[]` | Reports readiness without reading full records |
-| `recall` | `question`, optional `top_k` (default 20, max 50) and `user_partition` | Best-evidence answer plus bounded evidence refs |
-| `read` | `read_tokens[]`, optional `user_partition` | Resolves selected evidence to verified source text |
-| `delete` | `source_id`, `idempotency_key` | Deletes a source and derived candidates idempotently |
+| Tool | What it does | Important parameters |
+|------|--------------|----------------------|
+| `remember` | Saves one memory, idempotently | `text`, `idempotency_key`, optional `source_id`, `topic`, and `user_partition` |
+| `status` | Reports whether saved memories are ready to recall | optional `source_ids[]` |
+| `recall` | Answers a question with the strongest saved evidence | `question`, optional `top_k` (default 20, max 50), optional `depth`, and `user_partition` |
+| `read` | Fetches the exact original text behind a recall result | `read_tokens[]` and optional `user_partition` |
+| `delete` | Removes one memory and everything derived from it | `source_id`, `idempotency_key` |
 
 Scopes: `remember` requires `memory:write`; `recall`, `read`, and `status` require `memory:read`; `delete` requires `memory:delete`. Selecting a non-empty `user_partition` additionally requires `memory:partition`.
 
-### One key, many end users
+## What a recall result looks like
 
-For a multi-user application, keep one application key and pass a stable opaque
-partition identifier (normally your internal user UUID) on every `remember`,
-`recall`, and `read` call for that user:
+- `answer` is the single strongest piece of saved evidence — not a rewritten summary.
+- `evidence_refs` keep the broader supporting set, each with a short-lived read token.
+- Pass tokens to `read` verbatim (as a JSON array) to get the exact original text.
+- When nothing qualifies, you get an explicit no-evidence result with a machine-readable reason — never an invented answer.
 
-```json
-{
-  "question": "Which writing style do I prefer?",
-  "user_partition": "user-123"
-}
-```
+## Choosing a recall depth
 
-Partitions are isolated within the tenant. A different partition receives no evidence
-from this one, and a read token minted for one partition cannot be used in another.
-Omitting the field selects the tenant's default space, so use omission only when a
-shared default area is intentional. If you supply `source_id`, keep it unique across
-the tenant (for example, prefix it with the partition) instead of reusing one ID for
-multiple users.
+Omit `depth` to use your account default (`auto` until you change it in **Settings → Memory**). The three depths:
 
-## Recall and read contract
+- `fast` — one bounded lookup, zero provider-token spend. Best for simple, well-named questions.
+- `auto` — fast first; deeper multi-round gathering only when the fast answer is not confident enough. A question about something you never saved is declined without paying for deep gathering.
+- `deep` — multi-round gathering from the start, for hard multi-part questions ("how do A and B each relate to C"). The response reports rounds used, selector tokens, latency, and why it stopped.
 
-`top_k` is one global ceiling across extracted records and selected source spans. The returned `answer` renders only the highest-priority admitted evidence item; SPM does not concatenate every match into it.
+If no deep selector is configured, `deep` fails closed with `DEEP_RECALL_UNAVAILABLE` and `auto` simply stays on the fast path.
 
-`evidence_refs` can retain up to `top_k` broader items for provenance or multiple premises. Each ref contains a short-lived `read_token`:
+## How agents are asked to use memory
 
-- source-span evidence resolves to the exact selected span;
-- extracted-record evidence resolves to its verified backing source.
+SPM's MCP instructions ask capable agents to use memory quietly:
 
-Pass tokens to `read` verbatim as a JSON array. Do not decode and re-serialize them.
+1. If an earlier decision, constraint, or progress update is missing from active context, call `recall` before asking you to repeat it.
+2. Call `read` when the exact original text is needed.
+3. Continue the task with the result, without narrating that memory was searched.
+4. Not repeat an empty recall within the same logical turn.
 
-When no evidence qualifies, recall returns an explicit empty/refused outcome with a machine-readable gate reason. It does not invent an answer.
+Current files, Git state, and runtime observations remain authoritative when they may have changed since a memory was written. SPM cannot force every third-party MCP runtime to follow these instructions.
 
-## Silent continuity policy
+## Client configuration
 
-SPM's MCP instructions ask capable agents to use memory without narrating the lookup:
-
-1. If an earlier decision, constraint, progress update, or rationale is missing from active context, call `recall` before asking the user to repeat it.
-2. Call `read` when the exact source text or additional premises are needed.
-3. Continue the task using the result; do not announce that memory was searched or restored.
-4. Do not repeat an empty recall in the same logical turn.
-
-Current files, Git state, configuration, and runtime observations remain authoritative when they may have changed since a memory was written. Tool instructions guide the client agent; SPM cannot force every third-party MCP runtime to follow them.
-
-## Codex
+Codex:
 
 ```toml
 [mcp_servers.spm]
@@ -81,9 +67,7 @@ url = "https://api.spmos.ai/mcp"
 headers = { Authorization = "Bearer spm_live_..." }
 ```
 
-Prefer an environment-backed secret mechanism when your client supports one. A 401 `invalid_token` means the server was reached but the SPM key is missing, malformed, expired, revoked, or belongs to another environment.
-
-## Claude Code and generic MCP JSON
+Claude Code and generic MCP JSON:
 
 ```json
 {
@@ -98,20 +82,35 @@ Prefer an environment-backed secret mechanism when your client supports one. A 4
 }
 ```
 
-Restart the client after adding a server so it reloads the tool catalog.
+Restart the client after adding a server so it reloads the tool catalog. A 401 `invalid_token` means the server was reached but the SPM key is missing, malformed, expired, revoked, or belongs to another environment.
 
 ## Recommended round trip
 
-1. `remember` with a stable idempotency key and, when supplied, a source ID that has not already been deleted in the current memory generation.
-2. Poll `status` until the source is ready.
-3. `recall` using a natural-language question.
-4. Use `read` when the agent needs exact provenance or additional premises.
+1. `remember` with a stable idempotency key.
+2. Poll `status` until the memory is ready.
+3. `recall` with a natural-language question.
+4. `read` when exact original text or multiple premises are needed.
 5. `delete` test data when the workflow is complete.
 
-The MCP service is memory-only. It does not proxy your model request and does not require an upstream provider key.
+After deleting a memory, reusing the same `source_id` returns `409 SOURCE_ID_PURGED` until you clear memory and start fresh. Use a new source ID for genuinely new content.
 
-After targeted deletion, reusing the same `source_id` in the same memory generation fails closed with `409 SOURCE_ID_PURGED`. Advancing to a new memory generation permits that ID again. Use a new source ID for genuinely new content instead of trying to resurrect a deleted identity.
+The MCP service is memory-only. It does not proxy model requests and does not need a provider key.
 
 ## Health
 
 `/health`, `/livez`, and `/readyz` are unauthenticated probes. The MCP endpoint itself requires authentication.
+
+## One key, many end users
+
+For a multi-user application, keep one application key and pass a stable opaque
+partition identifier, normally your internal user UUID, on every remember, recall,
+and read call for that user:
+
+    {
+      "question": "Which writing style do I prefer?",
+      "user_partition": "user-123"
+    }
+
+Selecting a non-empty partition additionally requires the `memory:partition` scope.
+Partitions are isolated within the tenant, and a read token minted for one partition
+cannot be used in another. Omitting the field selects the tenant's default space.

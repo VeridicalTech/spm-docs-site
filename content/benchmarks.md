@@ -2,55 +2,46 @@
 title: Benchmarks
 description: Current SPM-Polaris benchmark evidence, measurement boundaries, reproducibility requirements, result limitations, and invalid historical comparisons.
 published: 2026-08-19
-updated: 2026-08-26
+updated: 2026-09-05
 applies_to: SPM-Polaris V3.0.0
 ---
 
 # Benchmarks
 
-This page reports only currently valid evidence. Historical scores measured on a different recall shape, embedding backend, or incomplete runner are not presented as current production accuracy.
+This page reports only currently valid evidence. Results measured with a different recall stack, embedding service, or incomplete runner are not presented as current accuracy. These are observations from stated cases, not guarantees for every request.
 
-## Verified production observations
+## Measured in production
 
 | Observation | Result | Scope |
 |-------------|--------|-------|
-| Long-history deterministic compression | 66,265 original input tokens → 365 forwarded; 279 recalled; **99.45% less provider input** | One real, eligible hosted Provider Proxy request |
+| Long-history request | 66,265 input tokens reduced to 365 forwarded; 279 recalled; **99.45% less provider input** | One real, eligible hosted Provider Proxy request |
+| Agentic tool-output removal | 43k–53k fewer input tokens per request (about 85% of the removable tool-output bulk); upstream response time fell from ~2 minutes to ~35 seconds | Sampled production agentic sessions, 2026-08 |
 | Starter limiter burst | 30 successful requests + 15 HTTP 429 responses from a 45-request burst | One measured Starter 30 req/min window |
-| New MCP memory readiness | 8.23 seconds to ready | One production remember/status round trip |
-| MCP read integrity | Stored and read text matched byte-for-byte | Production remember → status → recall → read |
-| Warm historical MCP recall | 4.93 seconds | One warm production observation; not an SLO |
-| Agentic tool-output removal | 43k–53k fewer input tokens per request (about 85% of removable tool output); upstream response from ~2 minutes to ~35 seconds | Sampled production agentic sessions, 2026-08 |
+| New memory readiness | ~8.2 seconds from save to recallable | One production remember/status round trip |
+| Saved-text integrity | Stored and re-read text matched byte-for-byte | Production remember → status → recall → read |
+| Warm recall | ~5 seconds | One warm production observation; not an SLO |
 
-These are observations, not guarantees. Network distance, corpus size, provider latency, cold span indexing, protected protocol state, and request shape all affect results. The compression figures include provider, tunnel, indexing, and queuing costs; they are not an isolated measurement of SPM overhead and must not be extrapolated to every request. Short or new conversations correctly show zero reduction, and when protected state cannot be safely changed, the per-request receipt marks the request as fully preserved.
+Network distance, corpus size, provider latency, protected request content, and request shape all affect results. Do not extrapolate a single observation to every request.
 
-The [SPM-Polaris technical report](technical-report.html) places these bounded observations in the larger architecture, integration, deletion, and evaluation context.
+## Recall depth: cost and quality trade-offs
 
-## Recall depth: cost–quality Pareto
+Measured on a frozen probe set (English and Chinese arms, reproducible from this repository) with the production recall stack, 2026-08-25:
 
-Frozen probe, 2026-08-25, two arms, reproducible in the repository:
+| Depth | Unanswerable questions declined | Answerable questions found | Provider tokens spent | Typical latency |
+|-------|---------------------------------|----------------------------|-----------------------|-----------------|
+| `fast` | 23/23 | 15/15 | 0 | ~3 ms |
+| `auto` (default) | all | all | spent only on low-confidence queries (~55% of probes), at 52–66% of deep's cost | ~3.5 ms |
+| `deep` | all | all | highest; multi-round gathering | ~1.3 s |
 
-| Depth | Unanswerable questions refused | Answerable questions hit | Provider tokens | Typical latency |
-|-------|-------------------------------|--------------------------|-----------------|-----------------|
-| fast | 23/23 | 15/15 | 0 | ~3 ms |
-| auto (default) | all passed | all passed | only ~55% low-confidence queries pay; 52–66% of deep cost | ~3.5 ms |
-| deep | all passed | all passed | highest (multi-round evidence collection) | ~1.3 s |
-
-The zero-cost fast path already refuses every unanswerable question in this probe. Auto preserves quality while paying only for queries that genuinely need deep evidence collection; deep retains multi-round capability for the hardest multi-hop questions. Chinese and English memory recall are both verified in production on fast and deep paths.
+Reading: the free `fast` path already declines every unanswerable question in the probe set. `auto` keeps that quality and only pays for deeper gathering when it is genuinely needed. `deep` exists for the hardest multi-part questions.
 
 ## When token reduction appears
 
-Deterministic compression needs both:
-
-1. input above the active budget (8,192 estimated tokens when no model-specific budget is available); and
-2. at least one complete old exchange that can be removed without touching protected state.
-
-Therefore 0% on short, single-turn, or opaque histories is correct. Do not extrapolate the 99.45% example to every request.
+Reduction needs both: a history long enough to matter, and older exchanges whose content is already stored as memory. Short, new, or fully protected conversations correctly show no reduction.
 
 ## Recall-quality status
 
-The production embedding service now uses a privately operated Voyage 4 Nano-compatible embedding runtime and no hosted reranker. Historical LoCoMo/payload-recall figures measured with hosted Voyage Large/rerank or older harness shapes are not current evidence.
-
-A 301-question run attempted across a high-latency tunnel degraded after dense-span timeouts and produced no valid result artifact. It is excluded. A current production-near re-anchor must separately report accuracy, abstention, latency, corpus state, and exact model/commit pins before a new recall-quality number is published.
+The current recall stack uses a privately operated Voyage 4 Nano-compatible embedding service and no hosted reranker. Historical LoCoMo figures measured with hosted Voyage Large/rerank or older evaluation shapes are not current evidence and are intentionally not quoted here. A new production-near number will be published only with its accuracy, abstention, latency, corpus state, and exact model/commit pins.
 
 ## Methodology rules
 
@@ -58,4 +49,4 @@ A 301-question run attempted across a high-latency tunnel degraded after dense-s
 - Keep degraded or interrupted runs, but label and exclude them from headline anchors.
 - Separate retrieval/evidence recall from downstream answer phrasing.
 - Report medians and tail latency where sample size permits.
-- Do not call a single request an SLO or a general savings guarantee.
+- Never present a single request as an SLO or a general savings guarantee.

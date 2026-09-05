@@ -1,123 +1,81 @@
 ---
-title: Memory, evidence & deletion
+title: Your memory
 description: How SPM writes, retrieves, admits, reads, and deletes memory with provenance, evidence gates, scopes, and verifiable lifecycle controls.
 published: 2026-08-19
-updated: 2026-08-26
+updated: 2026-09-05
 applies_to: SPM-Polaris V3.0.0
 ---
 
-# Memory, evidence & deletion
+# Your memory
 
-## How memory is written
+This page answers three questions: what SPM saves for you, what happens to it over time, and how you find it again or remove it.
 
-Memory enters through:
+## What gets saved
 
-- explicit MCP `remember` calls;
-- console/source operations; and
-- eligible text captured around Provider Proxy or Local Proxy exchanges.
+Memory enters in three ways:
 
-Write jobs are idempotent, retried with backoff, and dead-lettered after exhausting attempts. A slow ingest job does not block the provider response.
+- **Explicitly** — your agent calls the MCP `remember` tool, or you add a source in the console.
+- **Automatically** — when you use the Provider Proxy or Local Proxy, your messages and the assistant's visible replies can be saved for later sessions.
 
-For Hosted Provider Proxy and Local Proxy source prepared for `0.1.1`, capture and provider forwarding are separate copies:
+Some things are **never** saved as memory, even though they pass through to your provider unchanged: model reasoning and thinking blocks, tool-call arguments, partial streamed JSON, and signatures. They belong to the provider's protocol, not to your memory.
 
-- visible user text can be captured according to the request's memory mode;
-- Chat assistant content, Responses `output_text`, and Anthropic `text` can be captured;
-- reasoning summaries, reasoning objects, thinking/redacted-thinking blocks, tool/function arguments, signatures, and partial JSON are never memory content;
-- those excluded objects still pass to and from the provider unchanged.
-- short standalone assistant messages that only report missing memory/context and inability to continue remain auditable sources but are not promoted into recall candidates;
-- an assistant message containing a path, URL, hash, assignment, status, or any other durable fact still follows normal extraction even if it also mentions missing context;
-- exact repeated proxy captures reuse a content-stable source identity inside the active namespace generation.
+Practical details:
 
-Hosted Proxy ingest carries `source_kind` and positional `role_spans`, so extraction can retain whether visible text came from the user or assistant. The Local Proxy source prepared for `0.1.1` carries the same fields and recognizes deterministic source identities created by `0.1.0` during continuity checks. Exact repeated content uses a stable source identity instead of creating duplicate source records.
+- Saving the same content twice does not create duplicates.
+- Re-saving a large changed document only processes the parts that changed.
+- If saving is briefly unavailable, your model request still completes normally; the save is retried in the background.
+- Short assistant messages that only say "I don't have that in memory" are kept for audit but never mixed into your real memories.
 
-Public npm `0.1.0` predates the current Local Proxy capture allowlists: streamed Chat tool-call arguments and Anthropic partial JSON can enter its assistant capture. Use Hosted Provider Proxy when capture hygiene is required until `0.1.1` is published.
+## How your memory evolves
 
-Single-turn input can be stored. In multi-turn histories, SPM avoids duplicating the latest user unit when it is expected to return as part of later history.
+Your memory is not a pile of frozen notes. As related facts accumulate, SPM consolidates them into **observations**:
 
-## Trust and provenance
+- When something changes — you switched from React to Vue, a deploy window moved, a decision was revised — the observation shows the current state and keeps the earlier state as its history (for example, "uses Vue (previously: used React)"). Nothing is silently overwritten.
+- Each observation carries a **proof count**: how many distinct saved facts support it.
+- Observations are found by recall like any other memory, and deleting the sources behind an observation retires it too.
 
-Every extracted record carries signed provenance and stored trust. Current admission precedence is:
+## Asking questions (recall)
 
-```text
-user statement (0.90) > externally observed/source span (0.68) > assistant proposal (0.35)
-```
+Ask in natural language. You get back the strongest saved evidence for your question — with references back to the original text — not an invented answer.
 
-Equal-trust records preserve existing relevance/reranker order. SPM first gives distinct sources a seat, then allows additional distinct evidence from the same source up to the configured per-source cap.
+When nothing in memory actually answers the question, SPM says so explicitly instead of returning a look-alike answer. The refusal carries a machine-readable reason, so your agent can tell "not saved" apart from "search unavailable".
 
-This does not make a user statement objectively true; it means the system will not let a lower-authority assistant proposal overwrite what the user explicitly stated.
+Three depths are available; `auto` is the default and the right choice for almost everyone:
 
-## Best-evidence recall
+| Depth | Behavior | Cost |
+|---|---|---|
+| `fast` | One bounded lookup. Never spends provider tokens on selection. | No extra model cost |
+| `auto` (default) | Fast lookup first; only when it is not confident enough does SPM run deeper multi-round gathering | Pays for deeper gathering only when needed |
+| `deep` | Goes straight to multi-round gathering for the hardest, multi-part questions | Highest; the response reports exactly what it spent |
 
-Recall combines lexical and vector candidates, verifies the active tenant/fence/ACL, deduplicates normalized evidence, and applies one final global `top_k`.
+Set your account's default depth in **Settings → Memory** — every recall that does not name a depth uses it. The same tab controls whether your proxy conversations are saved at all (your messages and assistant replies can each be turned off).
 
-- `answer` contains only the highest-priority admitted evidence item.
-- `evidence_count` and `evidence_refs` describe the broader bounded evidence set.
-- agents use `read` when they need exact source text or multiple premises.
-- agents should call `recall` silently before filesystem or shell searches used only to reconstruct missing conversation history; an empty recall should not be repeated in the same logical turn.
-- agents should inspect current files, Git, configuration, and runtime state directly whenever those authorities may have changed since the memory was written.
+## Reading the exact original text
 
-SPM deliberately does not add a generative answer model or brittle entity-extraction heuristic to turn `hello im apollo` into a cosmetically normalized answer. The downstream agent can phrase the final response while preserving provenance.
+Recall results include short-lived read tokens. Your agent passes them to the `read` tool to fetch the exact saved span behind a result — useful when it needs the original wording or more than one premise.
 
-When nothing qualifies:
+## Deleting
 
-```text
-UNKNOWN — no supporting memory found.
-```
+| You want to remove | Do this | What happens |
+|---|---|---|
+| One memory | MCP `delete` or the console | That memory and everything derived from it is removed; repeating the same deletion returns the original result |
+| All memory | Console **Clear memory** | Active memory is wiped and verified absent; you start with a clean slate |
+| Your account | Console **Close account** | Tracked deletion workflow, including credential revocation |
 
-## Recall depth (fast / auto / deep)
+A deleted source ID cannot be reused until you clear memory — this prevents deleted content from quietly reappearing under an old receipt. Every completed purge produces a signed receipt.
 
-Recall runs at three depths:
+Deletion removes data from active memory. Backups created before a purge age out on their normal retention schedule.
 
-- **fast** — lexical/vector evidence gate only; zero provider tokens.
-- **auto** (default) — confidence-based routing: high-confidence queries stay on the fast path; only low-confidence queries escalate to deep evidence collection.
-- **deep** — multi-round evidence collection for the hardest multi-hop queries; this is the only depth that may spend provider tokens, and the spend is itemized on the request receipt.
+## Who can see your memory
 
-The default recall depth, capture switches, compression mode, input budget, and recall caps are tenant-level preferences, adjustable in console **Settings**; changes apply to all three integration paths in about a minute.
+Only your account. Every memory object belongs to your tenant, and results are checked against your account and current memory generation before they are returned. A degraded memory lookup fails openly or returns less — it never returns someone else's memory.
 
-## Memory evolution and quarantine
-
-Related facts consolidate into **observations**. When a preference or fact changes, the observation presents the current state and keeps its history — for example, “uses Vue (previously: React)” — with proof counts and provenance attached. Nothing is silently overwritten.
-
-Content captured automatically around proxied exchanges first lands in an isolated **quarantine ring** and is promoted into the main memory layer only after quality checks. Ambient agent noise therefore does not pollute long-term memory.
-
-## Read tokens
-
-Read tokens are short-lived and bound to the authenticated tenant and memory fence.
-
-- A `temporary-source-span+v1` token returns exactly the selected source span.
-- A `gated-evidence+v1` extracted-record token returns the verified backing source.
-
-Multiple refs from the same source remain separate and positionally aligned; they may represent different spans or record/source views.
-
-## Deletion
-
-| Scope | Interface | Behavior |
-|-------|-----------|----------|
-| One source | MCP `delete` or targeted purge | Idempotently removes that source and derived candidates |
-| All memory | Console **Clear memory** | Synchronous tenant-history purge with fence advance and absence verification |
-| Whole account | Console **Close account** | Asynchronous tracked deletion workflow including credential revocation and finalization |
-
-Revoked API keys and provider configurations disappear from the console and behave as deleted.
-
-A completed purge receipt is signed and persisted. Repeating the same idempotent operation returns the established result rather than advancing the generation twice.
-
-Targeted deletion also leaves a source tombstone inside the exact tenant, namespace, account epoch, and namespace generation. Once a source ID has a pending, completed, or not-found purge record, ingest cannot reuse that ID in the same generation and returns `409 SOURCE_ID_PURGED`. This prevents deleted source, job, candidate, lineage, or vector state from being resurrected behind an older purge receipt. The same ID can be used after a deliberate generation advance.
-
-## Retention caveat
-
-Purge removes data from active stores and derived indexes. Backups, WAL, and replicas created before the purge age out according to their retention schedules. Per-tenant cryptographic erasure by key destruction is not currently claimed.
-
-## Tenant isolation
-
-Sources, records, candidates, jobs, vectors, receipts, and replay tokens carry tenant and generation boundaries. Row-level security, namespace fences, signed capability/evidence tokens, and final render-time checks enforce isolation.
-
-### End-user partitions inside a tenant
+## End-user partitions inside a tenant
 
 Applications that serve several end users can use one SPM key with a stable
-`user_partition` per user. The key must include `memory:partition`; the value is then
-carried through writes, recall, evidence reads, and deletion checks. Partitions are
-isolated from one another even though they share a tenant and billing account.
+user_partition per user. The key must include memory:partition; the value is carried
+through writes, recall, evidence reads, and deletion checks. Partitions stay isolated
+even though they share a tenant and billing account.
 
-An omitted partition is the tenant's default space. Keep that space separate from
-per-user data unless shared memory is explicitly intended. Use opaque, stable IDs such
-as application user UUIDs, not secrets or mutable display names.
+An omitted partition is the tenant's default space. Use opaque, stable IDs such as
+application user UUIDs, not secrets or mutable display names.

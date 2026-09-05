@@ -47,27 +47,30 @@ WEB_PUBLIC = ROOT / "assets" / "logo"
 # (slug, section, title)
 PAGES = [
     ("index", "Start", "Overview"),
-    ("integrations", "Start", "Choose an integration"),
     ("quickstart", "Start", "Quickstart"),
     ("authentication", "Start", "Authentication & API keys"),
     ("plans", "Start", "Plans & quotas"),
+    ("memory", "Guides", "Your memory"),
+    ("mcp", "Guides", "MCP server"),
     ("providers", "Guides", "Bring your own provider"),
     ("local-proxy", "Guides", "Local Proxy"),
     ("proxy-api", "Guides", "Provider proxy API"),
-    ("memory", "Guides", "Memory, evidence & deletion"),
-    ("mcp", "Guides", "MCP server"),
     ("best-practices", "Guides", "Best practices"),
-    ("official-definitions", "Reference", "Official definitions"),
-    ("architecture", "Reference", "Architecture"),
-    ("security", "Reference", "Security"),
+    ("architecture", "Reference", "How SPM works"),
     ("benchmarks", "Reference", "Benchmarks"),
-    ("compare", "Reference", "Compare"),
-    ("roadmap", "Reference", "Roadmap"),
     ("faq", "Reference", "FAQ"),
     ("changelog", "Reference", "Changelog"),
-    ("technical-report", "", "Technical report"),
     ("privacy", "", "Privacy Policy"),
     ("terms", "", "Terms of Service"),
+    # Retained in the repository for direct links and historical references, but
+    # intentionally hidden from the public sidebar to match the latest Wrangler
+    # production information architecture. Do not delete these pages silently.
+    ("integrations", "", "Choose an integration"),
+    ("official-definitions", "", "Official definitions"),
+    ("security", "", "Security"),
+    ("compare", "", "Compare"),
+    ("roadmap", "", "Roadmap"),
+    ("technical-report", "", "Technical report"),
 ]
 
 MD_EXTENSIONS = ["fenced_code", "tables", "toc", "attr_list", "sane_lists"]
@@ -281,7 +284,8 @@ def write_machine_files(pages: list[tuple[str, dict[str, str]]]) -> None:
         + "\n".join(
             f"- [{metadata['title']}]({canonical_url(slug)}): {metadata['description']}"
             for slug, metadata in pages
-            if slug in {"index", "official-definitions", "integrations", "architecture", "security", "benchmarks", "technical-report", "changelog"}
+            if next(section for page_slug, section, _ in PAGES if page_slug == slug)
+            in {"Start", "Guides", "Reference"}
         )
         + "\n",
         encoding="utf-8",

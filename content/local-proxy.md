@@ -2,24 +2,22 @@
 title: Local Proxy
 description: Install and operate the SPM Local Proxy while keeping the provider credential and provider traffic on a machine you control.
 published: 2026-08-21
-updated: 2026-08-22
+updated: 2026-09-05
 applies_to: SPM-Polaris V3.0.0 and @spmos/local-proxy 0.1.x
 ---
 
 # Local Proxy
 
-`@spmos/local-proxy` is an optional loopback Provider Proxy for users who want the upstream provider credential to remain under local custody.
+`@spmos/local-proxy` runs on your machine and keeps your provider key there. Your client talks to the Local Proxy; the Local Proxy talks directly to your provider. SPM handles the memory side: recall lookups and eligible saved text still use the hosted memory service.
 
-It is **not** self-hosted SPM. Evidence-gated recall and eligible memory ingest still call the hosted SPM memory plane.
+It is **not** self-hosted SPM — your memory lives in the hosted service either way. What stays local is the provider credential and the full model traffic.
 
-Current npm release: **`@spmos/local-proxy@0.1.0`**.
-
-> **Release boundary:** version `0.1.1` is prepared in the public GitHub repository but is not published to npm yet. npm `0.1.0` does not emit `x-spm-continuity-state`, protect the two most recent exchanges, require recalled evidence from the removal set, or reliably exclude streamed tool arguments and Anthropic partial JSON from memory capture. Until `0.1.1` is published, use Hosted Provider Proxy when those guarantees are required.
+Current npm release: **`@spmos/local-proxy@0.1.2`**. It adds the same conversation-continuity, capture-hygiene, and tool-output elision protections as the Hosted Provider Proxy.
 
 ## Install
 
 ```bash
-npm install --global @spmos/local-proxy@0.1.0
+npm install --global @spmos/local-proxy@0.1.2
 spm setup
 spm doctor
 spm start
@@ -28,22 +26,20 @@ spm start
 Requirements:
 
 - Node.js `>=22.15`
-- an SPM key with scopes matching the selected memory mode
+- an SPM key with scopes matching the memory access you want
 - an upstream provider key
-- a downstream client that supports a custom Base URL
+- a client that supports a custom Base URL
 
 Both `spm` and `spm-local-proxy` invoke the same CLI.
 
-## What the wizard configures
+## What the setup wizard asks for
 
-- provider Base URL and API style
-- provider key, authentication style, headers, and query parameters
-- SPM key and API Base URL
+- provider Base URL, API style, key, and optional custom headers/query parameters
+- your SPM key and SPM API Base URL
 - loopback host/port
-- default memory and compression modes
-- input and recalled-context token budgets
+- default memory mode, compression mode, and token budgets
 
-The wizard searches provider metadata through the jsDelivr mirror of models.dev and caches it for 24 hours. Models.dev is discovery metadata only. The downstream harness—not Local Proxy—selects the request model.
+Your client—not the Local Proxy—chooses the model for each request.
 
 ## Default configuration
 
@@ -56,28 +52,18 @@ The wizard searches provider metadata through the jsDelivr mirror of models.dev 
 | Maximum recalled context | 512 estimated tokens |
 | SPM API | `https://api.spmos.ai` |
 
-Configuration is stored under `$SPM_CONFIG_HOME`, `$XDG_CONFIG_HOME/spm`, or `~/.config/spm`. On POSIX systems the directory is mode `0700` and the config file is mode `0600`.
+Configuration is stored under `$SPM_CONFIG_HOME`, `$XDG_CONFIG_HOME/spm`, or `~/.config/spm`, with owner-only file permissions.
 
-## Harness configuration
+## Client configuration
 
-### Codex
+Codex:
 
 ```bash
 spm print-config codex
 export SPM_LOCAL_PROXY_TOKEN="$(spm config token)"
 ```
 
-Equivalent provider shape:
-
-```toml
-[model_providers.spm_local]
-name = "SPM Local Proxy"
-base_url = "http://127.0.0.1:8765/v1"
-env_key = "SPM_LOCAL_PROXY_TOKEN"
-wire_api = "responses"
-```
-
-### Claude Code
+Claude Code:
 
 ```bash
 spm print-config claude
@@ -88,20 +74,30 @@ ANTHROPIC_BASE_URL="http://127.0.0.1:8765"
 ANTHROPIC_API_KEY="$SPM_LOCAL_PROXY_TOKEN"
 ```
 
-The provider configuration must use `anthropic_messages` for Messages traffic. OpenAI-compatible SDKs use `http://127.0.0.1:8765/v1`.
+OpenAI-compatible SDKs use `http://127.0.0.1:8765/v1`. Anthropic Messages traffic uses the `anthropic_messages` API style. The Local Proxy does not translate between dialects.
 
-## Credential and data boundary
+## What goes where
 
-| Item | Stored locally | Sent to SPM | Sent to provider | Given to harness |
-|------|----------------|-------------|------------------|------------------|
+| Item | Stored locally | Sent to SPM | Sent to provider | Given to your client |
+|------|----------------|-------------|------------------|----------------------|
 | Provider key | Yes | No | Yes | No |
 | SPM key | Yes | Used for memory calls | No | No |
 | Local token | Yes | No | No | Yes |
-| Recall query | Transient | Yes | Only if inserted into provider prompt | Through normal request |
+| Recall query | Transient | Yes | Only if inserted into the prompt | Through the normal request |
 | Eligible captured text | Transient | Yes | Already part of model traffic | Originates in request/response |
-| Full provider request | Transient | No as a provider request | Yes | Originates in harness |
+| Full provider request | Transient | No | Yes | Originates in your client |
 
-Custom headers or query values containing `$API_KEY` are secrets and are protected with the same local configuration permissions.
+Custom headers or query values containing `$API_KEY` are secrets and are protected with the same local file permissions.
+
+## What 0.1.2 protects
+
+- The two most recent exchanges are never removed from a request.
+- Older history is removed only when its content is provably covered by recalled memory; otherwise the full request is sent.
+- Old tool outputs are replaced by short retrievable stubs once the identical content is safely stored in memory and can be recalled — on every supported protocol, including Anthropic Messages (tool pairing is never broken, and prompt-cache breakpoints are never touched).
+- Reasoning, thinking blocks, tool-call arguments, and partial streamed JSON are never saved as memory.
+- Every response carries `x-spm-continuity-state` so you can see which decision was made, plus `x-spm-elided-items` / `x-spm-elided-tokens` when stubs were used.
+
+Optional knobs: `proxy.elisionEnabled` (default on), `proxy.elisionKeepRounds` (default 4), `proxy.elisionCaptureLimit` (default 8).
 
 ## Local endpoints
 
@@ -113,41 +109,30 @@ Custom headers or query values containing `$API_KEY` are secrets and are protect
 | `GET /v1/models` | Direct upstream relay when the provider exposes it |
 | `GET /health` / `GET /livez` | Local process checks |
 
-Local Proxy supports JSON and SSE and decodes zstd request bodies used by Codex. It does not translate between OpenAI and Anthropic dialects.
+JSON and SSE are supported; zstd request bodies used by Codex are decoded.
 
 ## Security controls
 
-- loopback-only listener validation
-- separate random local harness token and timing-safe comparison
-- browser-origin and unexpected-Host rejection
-- HTTPS provider URL without embedded user information
-- public-address DNS validation and pinning
-- final filtering of SPM, cookie, forwarding, client-IP, and hop-by-hop headers
-- provider auth injection after filtering
-- masked config output and no request/response-body logging
+- accepts connections only from the local machine
+- uses a separate random local token for your client
+- rejects browser-origin and unexpected-host requests
+- requires an HTTPS provider URL and validates the address before use
+- strips SPM, cookie, forwarding, and client-IP headers before forwarding
+- masks config output and never logs request or response bodies
 - 10 MiB request-body limit
 
-These controls do not make an arbitrary upstream trustworthy. You remain responsible for the provider URL, retention/training settings, account security, and local machine.
+You remain responsible for the provider URL you choose, that provider's retention/training settings, and your local machine's security.
 
 ## Observability
 
-Public npm `0.1.0` responses include `x-spm-local-proxy`, request/memory/compression state, and original/forwarded/recalled token estimates. They do not include `x-spm-continuity-state`.
+Responses include `x-spm-local-proxy`, memory/compression state, original/forwarded/recalled token estimates, and `x-spm-continuity-state`.
 
-### Prepared for 0.1.1
-
-The public GitHub source prepared for `0.1.1` adds `x-spm-continuity-state`. Its deterministic compression protects the two most recent eligible exchanges and removes older history only when recall reports `status=recalled`, `gate_reason=passed`, and at least one admitted evidence source bound to the exact removal set.
-
-The prepared safe outcomes include `bypassed_empty_recall`, `bypassed_unproven_recall`, `bypassed_recall_degraded`, `bypassed_protected_context`, and `bypassed_provider_state`. These states preserve the complete request instead of forcing compression.
-
-The prepared assistant capture is limited to visible Chat content, Responses `output_text`, and Anthropic `text`/`text_delta`. It excludes reasoning/thinking, tool/function arguments, signatures, and partial JSON from memory.
-
-Local Proxy requests do **not** currently create hosted gateway receipts or populate Dashboard **Token savings** and **Recent request receipts**. Use the local response headers for per-request evidence.
+Local Proxy requests do **not** create hosted receipts, so they do not appear in the dashboard **Token savings** or **Recent request receipts** views. Use the local response headers for per-request evidence.
 
 ## Troubleshooting
 
-- `spm doctor` validates local configuration; it does not prove key scopes, bind the port, or complete a live provider request.
+- `spm doctor` validates local configuration; it does not prove key scopes or complete a live provider request.
 - `GET /v1/models` fails when the upstream does not expose that route.
-- 0% reduction is normal below budget, when no complete old exchange is removable, or when recall cannot prove continuity for the planned removal.
-- npm `0.1.0` predates source-bound continuity and the current capture allowlists. Do not use it when either guarantee is required. The prepared `0.1.1` source still recognizes deterministic source identities written by `0.1.0`.
-- One config/process selects one upstream transport, not one model. Multiple providers require separate config homes/processes/ports.
-- The foreground process stops with `Ctrl+C`; this release has no daemon manager, `status`, or `stop` command.
+- No reduction on a short or new conversation is expected — there was nothing safe to remove.
+- One config/process selects one upstream transport, not one model. Multiple providers need separate config homes and ports.
+- The foreground process stops with `Ctrl+C`; this release has no daemon manager.

@@ -2,66 +2,77 @@
 title: FAQ
 description: Answers about SPM hosting, Local Proxy, MCP, provider billing, memory refusal, evidence, compression, privacy, deletion, and availability.
 published: 2026-08-19
-updated: 2026-08-23
+updated: 2026-09-05
 applies_to: SPM-Polaris V3.0.0
 schema: FAQPage
 ---
 
 # FAQ
 
-## Is SPM self-hosted?
-The SPM memory plane is hosted. Local Proxy is an optional local provider-traffic component, not a self-hosted or offline edition of SPM.
+Everyday questions about using SPM.
 
-## How does SPM differ from retrieval-only memory?
-Retrieval-only systems return candidates. The current SPM-Polaris release evaluates candidates against tenant, namespace, scope, provenance, and evidence rules before admission. If no candidate survives, it returns `UNKNOWN` and injects no memory.
+## Getting started
 
-## Does SPM-Polaris add a generative LLM call to the memory path?
-For SPM-Polaris V3.0.0, the memory path adds no generative LLM call. Admission, compression, lifecycle, refusal, and receipts are governed by deterministic logic; dedicated embedding and reranking models may process relevant source, query, and candidate text. The configured provider still performs the requested model inference.
+**Do I have to move my model provider account?**  
+No. You keep your own provider account and billing. SPM adds the memory layer around it.
 
-## Where do provider credentials and model traffic go?
-SPM-Polaris supports three integration boundaries. Hosted Provider Proxy places the provider credential and model traffic in the SPM-hosted request path. Local Proxy keeps the provider credential and provider traffic on the machine you operate, while the SPM API key and eligible query or memory content still use the hosted memory plane unless memory mode is disabled. MCP keeps inference and provider credentials in the application and sends only explicit memory-tool content to hosted SPM.
+**Which integration should I pick?**  
+Hosted Provider Proxy if you want the simplest setup with dashboard receipts. Local Proxy if your provider key must stay on your machine. MCP if your agent should save and find memories explicitly without changing its model connection.
 
-## Must SPM store my provider key?
-No. Hosted Provider Proxy vaults it in SPM. Local Proxy keeps it in a protected local config and sends it directly to the configured upstream.
+**Is SPM self-hosted?**  
+No. The memory service is hosted. Local Proxy is a local traffic component for credential custody, not a self-hosted edition.
 
-## What data still reaches SPM when I use Local Proxy?
-Recall queries, admitted memory responses, and eligible captured text use hosted SPM according to memory mode. The full provider request is sent directly to the provider, not through the hosted Provider Proxy.
+## Your memory
 
-## Who selects the model?
-The request or downstream harness. Hosted SPM routes that model against the configuration's allowed models. Local Proxy does not select, alias, or rewrite it.
+**What does SPM save?**  
+What you explicitly save (MCP `remember`, console) and — through the proxy — your messages and the assistant's visible replies. Reasoning, thinking blocks, tool-call arguments, and partial streamed JSON are never saved as memory.
 
-## Why can one provider configuration contain multiple models?
-The credential, Base URL, API style, headers, and query parameters belong to the upstream configuration. Model is request routing, so a second row is needed only for a different upstream configuration.
+**What happens when I change my mind about something?**  
+Your memory evolves: related facts consolidate into observations that show the current state and keep the earlier state as history. You will not end up with two contradictory memories fighting each other.
 
-## Which providers can fetch models?
-Only Custom BYO channels use a guarded live `/models` probe. Preset providers use the reviewed models.dev-backed catalog.
+**What happens when the answer isn't in memory?**  
+Recall says so explicitly, with a machine-readable reason — instead of returning a look-alike answer. Your agent can then ask you or look elsewhere.
 
-## Why does `GET /v1/models` fail through Local Proxy?
-Local Proxy relays the route to the upstream. It does not synthesize a list from models.dev, so the upstream must expose that route.
+**Which recall depth should I use?**  
+Keep the default `auto`. It answers most questions with a free bounded lookup and only pays for deeper gathering when the question genuinely needs it. Use `deep` for hard multi-part questions, `fast` when you want guaranteed zero extra model cost.
 
-## Why does `spm doctor` pass while a live request fails?
-`spm doctor` validates local schema, listener, and API-style ownership. It does not prove SPM key scopes, provider credentials, upstream model access, port availability, or a complete request.
+**Can another account see my memory?**  
+No. Every memory belongs to your tenant, and results are checked against your account before being returned.
 
-## Why does a request show 0% reduction?
-The history must exceed the active budget and contain a complete old exchange that is safe to remove. The two most recent eligible exchanges remain protected, and older history is removed only when passed recall evidence covers the exact removal set. Short, single-turn, protected tool/reasoning/thinking histories, empty recall, or unrelated recall can correctly show 0%.
+## Cost and savings
 
-## Does SPM remove reasoning or tool state?
-Hosted Provider Proxy protects provider reasoning, Anthropic thinking/redacted thinking, tool/function arguments, event order, and identifiers from compression and relays them unchanged. Its memory capture excludes reasoning, thinking, tool/function arguments, and partial JSON. Equivalent Local Proxy behavior is prepared for `0.1.1`; public npm `0.1.0` predates it and can capture streamed tool arguments or Anthropic partial JSON.
+**When will I see token savings?**  
+When conversations get long: once older exchanges are safely stored as memory, they stop being resent to the model. Short conversations correctly show no reduction.
 
-## Why is recall `answer` not a polished entity answer?
-It is the highest-priority admitted evidence item, not an LLM-generated synthesis. Use `evidence_refs` and `read` for exact provenance; let the downstream agent phrase the final answer.
+**What does SPM charge for?**  
+Your SPM plan covers memory features (see [Plans & quotas](plans.html)). Model usage is billed by your provider directly — SPM does not resell inference.
 
-## Where are Local Proxy receipts shown?
-Local Proxy exposes per-request `x-spm-*` headers. It does not currently create hosted gateway receipts or populate hosted Dashboard savings/receipt views.
+## Credentials and providers
 
-## What happens when no memory qualifies?
-Recall fails closed with an explicit empty/refused state and gate reason. It does not invent supporting memory.
+**Must SPM store my provider key?**  
+No. Use Local Proxy: the key stays in a protected local configuration and goes directly from your machine to the provider.
 
-## Can I delete my data?
-Yes: delete one source, Clear memory for tenant history, or Close account. Active-store deletion is verified; pre-existing backups/WAL/replicas expire on their retention schedule.
+**What still reaches SPM when I use Local Proxy?**  
+Memory lookups, recall results, and eligible saved text. The full provider request goes directly to the provider.
 
-## Why can I not reuse a deleted source ID?
-Targeted deletion leaves a tombstone for that identity in the current memory generation. Reusing it returns `409 SOURCE_ID_PURGED`, preventing deleted data from being recreated behind an existing purge receipt. Use a new source ID, or reuse it only after a deliberate memory-generation advance.
+**Who selects the model?**  
+Your client. SPM routes the requested model against your configured provider; Local Proxy does not select or rewrite it.
 
-## Can another tenant see my memory?
-Tenant IDs, row-level security, namespace/generation fences, signed tokens, and final evidence-gate checks prevent cross-tenant recall.
+## Deletion
+
+**Can I delete my data?**  
+Yes — one memory, all memory (**Clear memory**), or your whole account (**Close account**). Deletion from active memory is verified, and you get a signed receipt.
+
+**Why can't I reuse a deleted source ID?**  
+Until you clear memory, a deleted ID stays blocked so deleted content cannot reappear under an old receipt. Use a new ID for new content.
+
+## Troubleshooting
+
+**Why does `spm doctor` pass while a live request fails?**  
+`doctor` validates local configuration. It does not prove key scopes, provider credentials, or a complete live request.
+
+**Where are Local Proxy receipts?**  
+Local Proxy exposes per-request `x-spm-*` headers. It does not create hosted receipts or appear in dashboard savings views.
+
+**Why did my request go through unchanged?**  
+A safety check did not pass — for example the memory lookup was unavailable or could not prove coverage for the older history. SPM always prefers sending the complete request over risking your provider's state.
