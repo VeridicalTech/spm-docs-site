@@ -8,6 +8,41 @@ applies_to: SPM public releases
 
 # Changelog
 
+## 2026-09-03
+
+- Deep recall now always weighs your saved facts alongside raw conversation
+  windows. Previously, a large collection of windows could occupy the whole
+  review budget, so answers to multi-part questions could miss facts that were
+  actually saved. Saved facts are now guaranteed a share of every deep review.
+- Memory evolution is more reliable: long-running background updates no longer
+  stop mid-write, and a batch that cannot be processed is now skipped with an
+  audited record instead of stalling the queue.
+- Fixed a server error that could intermittently reject memory saves and
+  deletions.
+
+## 2026-09-01
+
+- `auto` recall now returns a deeper result only after Deep recall completes
+  with sufficient evidence. Partial or interrupted gathering stays a clear
+  no-evidence result instead of becoming an answer.
+- Deep recall keeps gathering when the selected evidence is still missing a
+  requested premise, even if the words in the question already appear in the
+  current evidence. This improves multi-part questions without weakening
+  refusals for absent or look-alike facts.
+
+## 2026-08-29
+
+- Deep recall now uses a search index prepared as memories are saved. Large
+  memory collections no longer need to rebuild that index during each recall,
+  so repeated questions are more predictable.
+- Readiness checks are stricter: Deep recall only uses a memory collection when
+  its saved sources are fully searchable. If processing is still underway, SPM
+  returns a temporary, retryable unavailable result instead of silently using
+  partial evidence.
+- Interrupted memory deletion is safer to retry. Repeating the same deletion
+  continues its cleanup and returns the original receipt ID after completion,
+  rather than treating unfinished work as complete.
+
 ## 2026-08-26
 
 - Provider settings rebuild: the model catalog now auto-admits providers that
@@ -52,15 +87,13 @@ applies_to: SPM public releases
   requests show the `elided_tool_output` continuity state with the
   original and forwarded token counts, so removed old tool outputs are
   visible as real savings instead of a passthrough zero.
-- Deep recall now keeps every part of a multi-hop answer: when evidence
-  spans several facts (for example "who owns it and when is it planned"),
-  the evidence list includes all of them instead of only the part that
-  shares the question's wording. Refusals for look-alike evidence are
-  unchanged.
-- Recall diagnostics are richer: deep answers report the selector budget
-  tier, routing, coverage completion, and provider token/latency cost,
-  and slow provider selection now times out sooner so recalls fail fast
-  instead of hanging.
+- Deep recall now keeps supporting premises in the evidence list even when the
+  answer text is intentionally concise. Agents can use the attached read tokens
+  to retrieve the exact original wording for each premise. Refusals for
+  look-alike evidence are unchanged.
+- Deep recall diagnostics now explain how much work was used, whether evidence
+  coverage completed, and the provider token and latency cost. Slow selection
+  times out sooner so recalls fail clearly instead of hanging.
 
 ## 2026-08-24
 
@@ -93,7 +126,7 @@ applies_to: SPM public releases
 
 ## 2026-08-23
 
-- Added explicit fast and deep recall modes: `depth=deep` performs multi-round evidence gathering for harder questions and reports rounds, selector tokens, and latency; `fast` remains the bounded default.
+- Added explicit fast and deep recall modes: `depth=deep` performs multi-round evidence gathering for harder questions and reports rounds, provider usage, and latency; `fast` remains the bounded default.
 - Tightened abstention: recall now requires evidence with semantic support for the question beyond shared vocabulary, so unanswerable questions return an explicit no-evidence outcome instead of a look-alike answer.
 - The console Dashboard now shows estimated input-token savings (clearly labeled reference estimate, not billing) and a one-click shareable savings receipt.
 - Fixed Google and GitHub sign-in completion, account-closure requests, and the post-closure redirect so closed accounts land on sign-in with a clear notice.

@@ -202,7 +202,7 @@ def main() -> None:
     require("SPM-Polaris V3.0.0 release" in security, "security.html: implementation scope missing")
 
     sidebar_sample = (DIST / "index.html").read_text(encoding="utf-8")
-    require('<p class="nav-section">Legal</p>' not in sidebar_sample, "Legal must not be a sidebar section")
+    require('<p class="nav-section">Legal</p>' in sidebar_sample, "Legal sidebar section missing")
     require('href="/privacy"' in sidebar_sample, "Privacy footer link missing")
     require('href="/terms"' in sidebar_sample, "Terms footer link missing")
 

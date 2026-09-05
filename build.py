@@ -60,8 +60,8 @@ PAGES = [
     ("benchmarks", "Reference", "Benchmarks"),
     ("faq", "Reference", "FAQ"),
     ("changelog", "Reference", "Changelog"),
-    ("privacy", "", "Privacy Policy"),
-    ("terms", "", "Terms of Service"),
+    ("privacy", "Legal", "Privacy Policy"),
+    ("terms", "Legal", "Terms of Service"),
     # Retained in the repository for direct links and historical references, but
     # intentionally hidden from the public sidebar to match the latest Wrangler
     # production information architecture. Do not delete these pages silently.

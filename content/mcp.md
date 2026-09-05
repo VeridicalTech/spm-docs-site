@@ -42,7 +42,7 @@ Omit `depth` to use your account default (`auto` until you change it in **Settin
 
 - `fast` — one bounded lookup, zero provider-token spend. Best for simple, well-named questions.
 - `auto` — fast first; deeper multi-round gathering only when the fast answer is not confident enough. A question about something you never saved is declined without paying for deep gathering.
-- `deep` — multi-round gathering from the start, for hard multi-part questions ("how do A and B each relate to C"). The response reports rounds used, selector tokens, latency, and why it stopped.
+- `deep` — multi-round gathering from the start, for hard multi-part questions ("how do A and B each relate to C"). The response reports rounds used, provider tokens, latency, and why it stopped.
 
 If no deep selector is configured, `deep` fails closed with `DEEP_RECALL_UNAVAILABLE` and `auto` simply stays on the fast path.
 

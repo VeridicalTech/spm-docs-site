@@ -151,11 +151,11 @@ This preserves history instead of leaving two contradictory facts with no contex
 | not_found from read | Token expired, changed, or is outside the scope | Run a fresh recall |
 | memory data plane unavailable | Temporary service or network problem | Retry with backoff; avoid tight loops |
 | DATA_PLANE_BACKPRESSURE | Write queue is busy | Wait for the indicated retry window |
-| STALE_MEMORY_FENCE or access denied | Scope is stale or unauthorized | Refresh the session and verify credential scope |
+| Stale session or access denied | The session or key is no longer authorized | Refresh the session and verify credential scope |
 
 Do not treat a transient error as proof that memory is absent. Conversely, a successful
-HTTP response does not prove that the requested fact was found: inspect gate_reason,
-evidence_count, and evidence references.
+HTTP response does not prove that the requested fact was found: inspect the status,
+evidence count, and evidence references.
 
 ## 11. Measure quality and cost honestly
 
