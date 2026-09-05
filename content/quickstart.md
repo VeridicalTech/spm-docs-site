@@ -16,6 +16,8 @@ Sign in at `https://app.spmos.ai`, open **API Keys**, and create a key. It is sh
 
 Recommended scopes:
 
+- Any Provider Proxy or Local Proxy use: keep `gateway:invoke` selected (the console
+  pre-selects it) — without it the proxy refuses model requests with 403
 - Provider Proxy or Local Proxy with full memory: `memory:read` and `memory:write`
 - MCP explicit memory: add `memory:delete` only if the agent should delete memories
 - Hosted receipt lookup: add `receipt:read`

@@ -8,6 +8,16 @@ applies_to: SPM public releases
 
 # Changelog
 
+## 2026-09-05
+
+- **End-user partitions**: one API key can now serve many end users with
+  isolated per-user memory spaces. Give the key the `memory:partition` scope and
+  send a stable opaque `user_partition` on remember, recall, and read calls.
+  Partitions are fenced across writes, recall, evidence reads, and read tokens.
+- **Stored Memories** now shows a short topic label derived from each source's
+  own content (plus its type: Input, Tool output, or Assistant) instead of a bare
+  source ID, so you can tell memories apart at a glance.
+
 ## 2026-09-03
 
 - Deep recall now always weighs your saved facts alongside raw conversation

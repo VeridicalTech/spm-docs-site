@@ -23,7 +23,7 @@ The production server name is **SPM**. Tool names are exactly `remember`, `recal
 |------|--------------|----------------------|
 | `remember` | Saves one memory, idempotently | `text`, `idempotency_key`, optional `source_id`, `topic`, and `user_partition` |
 | `status` | Reports whether saved memories are ready to recall | optional `source_ids[]` |
-| `recall` | Answers a question with the strongest saved evidence | `question`, optional `top_k` (default 20, max 50), optional `depth`, and `user_partition` |
+| `recall` | Answers a question with the strongest saved evidence | `question`, optional `top_k` (default 20; raise it for broader evidence coverage), optional `depth`, and `user_partition` |
 | `read` | Fetches the exact original text behind a recall result | `read_tokens[]` and optional `user_partition` |
 | `delete` | Removes one memory and everything derived from it | `source_id`, `idempotency_key` |
 

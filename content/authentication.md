@@ -37,6 +37,7 @@ Keys carry least-privilege scopes:
 
 | Scope | Allows |
 |-------|--------|
+| `gateway:invoke` | Call the hosted Provider Proxy model endpoints (`/v1/chat/completions`, `/v1/responses`, `/v1/messages`). Required for any proxied model request; a memory-only key is refused with 403. Pre-selected by default when you create a key in the console |
 | `memory:write` | Store memory (MCP `remember`, automatic ingest) |
 | `memory:read` | Recall, read back evidence, and query memory status |
 | `memory:delete` | Delete memory sources and purge |
