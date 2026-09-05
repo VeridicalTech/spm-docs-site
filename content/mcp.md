@@ -2,7 +2,7 @@
 title: MCP server
 description: Connect an MCP client to SPM memory tools for governed remember, recall, read, delete, and status operations.
 published: 2026-08-19
-updated: 2026-08-22
+updated: 2026-09-05
 applies_to: SPM-Polaris V3.0.0
 ---
 
@@ -21,13 +21,33 @@ The production server name is **SPM**. Tool names are exactly `remember`, `recal
 
 | Tool | Important parameters | Result |
 |------|----------------------|--------|
-| `remember` | `text`, `idempotency_key`, optional `source_id` and `topic` | Queues one source idempotently |
+| `remember` | `text`, `idempotency_key`, optional `source_id`, `topic`, and `user_partition` | Queues one source idempotently |
 | `status` | optional `source_ids[]` | Reports readiness without reading full records |
-| `recall` | `question`, optional `top_k` (default 20, max 50) | Best-evidence answer plus bounded evidence refs |
-| `read` | `read_tokens[]` | Resolves selected evidence to verified source text |
+| `recall` | `question`, optional `top_k` (default 20, max 50) and `user_partition` | Best-evidence answer plus bounded evidence refs |
+| `read` | `read_tokens[]`, optional `user_partition` | Resolves selected evidence to verified source text |
 | `delete` | `source_id`, `idempotency_key` | Deletes a source and derived candidates idempotently |
 
-Scopes: `remember` requires `memory:write`; `recall`, `read`, and `status` require `memory:read`; `delete` requires `memory:delete`.
+Scopes: `remember` requires `memory:write`; `recall`, `read`, and `status` require `memory:read`; `delete` requires `memory:delete`. Selecting a non-empty `user_partition` additionally requires `memory:partition`.
+
+### One key, many end users
+
+For a multi-user application, keep one application key and pass a stable opaque
+partition identifier (normally your internal user UUID) on every `remember`,
+`recall`, and `read` call for that user:
+
+```json
+{
+  "question": "Which writing style do I prefer?",
+  "user_partition": "user-123"
+}
+```
+
+Partitions are isolated within the tenant. A different partition receives no evidence
+from this one, and a read token minted for one partition cannot be used in another.
+Omitting the field selects the tenant's default space, so use omission only when a
+shared default area is intentional. If you supply `source_id`, keep it unique across
+the tenant (for example, prefix it with the partition) instead of reusing one ID for
+multiple users.
 
 ## Recall and read contract
 

@@ -2,7 +2,7 @@
 title: Best practices
 description: Practical guidance for reliable, useful, and safe SPM memory.
 published: 2026-09-04
-updated: 2026-09-04
+updated: 2026-09-05
 applies_to: SPM-Polaris V3.0.0
 ---
 
@@ -190,3 +190,44 @@ questions by inventing support is worse than one that honestly says UNKNOWN.
 
 The goal is not to maximize the amount of memory shown to the model. The goal is to
 assemble the smallest trustworthy context that lets the agent act correctly.
+
+## 14. Use one key for several end users safely
+
+If your application serves many people, you can keep one SPM key for the application
+while assigning every person a stable `user_partition`. A partition is an opaque,
+application-defined identifier such as your user UUID. It is not a display name and
+should not contain secrets.
+
+Enable the `memory:partition` scope in addition to the scopes the integration already
+needs:
+
+| Scope | Use |
+|---|---|
+| `memory:read` | Recall and read evidence for the current user partition |
+| `memory:write` | Remember facts for the current user partition |
+| `memory:partition` | Allow the key to select an end-user partition |
+
+Then pass the same partition on every memory operation for that user. With MCP, the
+pattern is:
+
+```json
+{
+  "text": "I prefer concise status updates.",
+  "idempotency_key": "user-123-status-style-2026-09",
+  "user_partition": "user-123"
+}
+```
+
+Use `user_partition: "user-123"` on the corresponding `recall` and `read` calls.
+SPM binds the value to the request and evidence token, so a recall in `user-456`
+cannot return `user-123` memory. A key that lacks `memory:partition` is rejected when
+it attempts to select a non-empty partition.
+
+Keep the value stable across sessions and environments, and test the three important
+cases: a user can see their own memory, a different user cannot see it, and an
+unpartitioned request cannot accidentally become a shared catch-all. If you provide
+explicit `source_id` values, make them unique across the tenant (for example,
+`user-123:preferences`) rather than reusing the same ID for different users.
+
+Requests that omit `user_partition` use the tenant's default space. Treat that as a
+separate, intentional shared area; do not mix it with per-user data by accident.

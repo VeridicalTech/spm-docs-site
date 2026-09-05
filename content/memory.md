@@ -110,3 +110,14 @@ Purge removes data from active stores and derived indexes. Backups, WAL, and rep
 ## Tenant isolation
 
 Sources, records, candidates, jobs, vectors, receipts, and replay tokens carry tenant and generation boundaries. Row-level security, namespace fences, signed capability/evidence tokens, and final render-time checks enforce isolation.
+
+### End-user partitions inside a tenant
+
+Applications that serve several end users can use one SPM key with a stable
+`user_partition` per user. The key must include `memory:partition`; the value is then
+carried through writes, recall, evidence reads, and deletion checks. Partitions are
+isolated from one another even though they share a tenant and billing account.
+
+An omitted partition is the tenant's default space. Keep that space separate from
+per-user data unless shared memory is explicitly intended. Use opaque, stable IDs such
+as application user UUIDs, not secrets or mutable display names.

@@ -2,7 +2,7 @@
 title: Authentication & API keys
 description: Create and protect SPM API keys, choose least-privilege memory scopes, and configure authentication for hosted proxy and MCP clients.
 published: 2026-08-19
-updated: 2026-08-22
+updated: 2026-09-05
 applies_to: SPM-Polaris V3.0.0
 ---
 
@@ -38,9 +38,22 @@ Keys carry least-privilege scopes:
 | `memory:write` | Store memory (MCP `remember`, automatic ingest) |
 | `memory:read` | Recall, read back evidence, and query memory status |
 | `memory:delete` | Delete memory sources and purge |
+| `memory:partition` | Select an end-user partition within the tenant |
 | `receipt:read` | Query request receipts |
 
 A proxy-only integration still exercises memory scopes internally per request; grant `receipt:read` only to tooling that audits traffic.
+
+### End-user partitions
+
+One application key may serve multiple end users without putting everyone in the
+same memory space. Give the key `memory:partition` and send a stable opaque
+`user_partition` value with each memory operation. The partition is bound to ingest,
+recall, evidence reads, and deletion checks. A non-empty partition without that scope
+fails closed; requests without a partition remain in the tenant's default space.
+
+Use an internal user UUID rather than an email address when possible, and never put
+secrets or personal data in the identifier. Keep the same value for that user across
+sessions so their memory remains addressable.
 
 The key's read/write scopes also select the Provider Proxy's default memory mode. A request may lower that mode with `x-spm-memory-mode`, but it cannot upgrade beyond the key.
 
