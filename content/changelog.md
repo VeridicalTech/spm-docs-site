@@ -2,11 +2,35 @@
 title: Changelog
 description: Dated public changes to SPM interfaces, behavior, documentation, and supported integration boundaries.
 published: 2026-08-19
-updated: 2026-09-05
+updated: 2026-09-07
 applies_to: SPM public releases
 ---
 
 # Changelog
+
+## 2026-09-07
+
+- **Faster, steadier answers through the Provider Proxy**: memory lookups on
+  the proxy path now use the bounded fast lookup by default, memory captures
+  run in parallel with a hard deadline instead of one-by-one, and unchanged
+  history is no longer re-saved on every turn. Every proxied request logs its
+  per-stage memory timings, so slow memory behavior is visible instead of
+  silent.
+- **Chained Responses requests are no longer a memory blind spot**: calls that
+  continue a provider-side thread (`previous_response_id`) now save their new
+  input and can receive recalled context, while compression stays off for
+  provider-managed threads.
+- **Token estimates are fairer for CJK text**: Chinese, Japanese, and Korean
+  content is now estimated per character instead of by byte count, so budgets
+  and billing estimates stop undercounting CJK conversations.
+- **Anthropic tool pairing is protected when memory is injected**: recalled
+  context never lands between a tool call and its result.
+- **New `lane_policy` parameter** on the MCP `recall` tool and recall APIs:
+  `explicit_first` (default) ranks deliberate saves ahead of passive proxy
+  captures, `blended` keeps one shared pool, and `observed_only` answers
+  "what did I say in chat" questions from proxy captures. The parameter is
+  accepted today; the server-side lane ordering itself activates after a
+  paired evaluation gate.
 
 ## 2026-09-05
 

@@ -25,6 +25,7 @@ Practical details:
 - Re-saving a large changed document only processes the parts that changed.
 - If saving is briefly unavailable, your model request still completes normally; the save is retried in the background.
 - Short assistant messages that only say "I don't have that in memory" are kept for audit but never mixed into your real memories.
+- Deliberate saves (MCP `remember`, console, direct API) are **committed** memory; proxy-captured conversation is **observed** memory. Observed memory is retrievable, but it is never promoted to committed on its own — only consolidation or an explicit save does that. See the MCP recall `lane_policy` parameter for how the two compete at recall time.
 
 ## How your memory evolves
 

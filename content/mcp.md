@@ -23,7 +23,7 @@ The production server name is **SPM**. Tool names are exactly `remember`, `recal
 |------|--------------|----------------------|
 | `remember` | Saves one memory, idempotently | `text`, `idempotency_key`, optional `source_id`, `topic`, and `user_partition` |
 | `status` | Reports whether saved memories are ready to recall | optional `source_ids[]` |
-| `recall` | Answers a question with the strongest saved evidence | `question`, optional `top_k` (default 20; raise it for broader evidence coverage), optional `depth`, and `user_partition` |
+| `recall` | Answers a question with the strongest saved evidence | `question`, optional `top_k` (default 20; raise it for broader evidence coverage), optional `depth`, `lane_policy`, and `user_partition` |
 | `read` | Fetches the exact original text behind a recall result | `read_tokens[]` and optional `user_partition` |
 | `delete` | Removes one memory and everything derived from it | `source_id`, `idempotency_key` |
 
@@ -45,6 +45,22 @@ Omit `depth` to use your account default (`auto` until you change it in **Settin
 - `deep` — multi-round gathering from the start, for hard multi-part questions ("how do A and B each relate to C"). The response reports rounds used, provider tokens, latency, and why it stopped.
 
 If no deep selector is configured, `deep` fails closed with `DEEP_RECALL_UNAVAILABLE` and `auto` simply stays on the fast path.
+
+## Choosing a recall lane
+
+Memory enters through two kinds of channels: deliberate saves (`remember`,
+console, direct API writes) and passive captures from proxy traffic. The
+`lane_policy` parameter controls how they compete for recall seats:
+
+- `explicit_first` (default) — deliberate saves hold recall seats first;
+  passive captures fill in only when deliberate memory is not enough.
+- `blended` — one shared pool, ranked purely by relevance.
+- `observed_only` — answer only from passive captures; use it for "what did I
+  say in chat" questions about proxy-captured content.
+
+The Provider Proxy's own continuity lookups use `blended`. The lane ordering
+for `explicit_first` is rolling out behind a paired evaluation gate; the
+parameter is accepted today and is a no-op until the gate completes.
 
 ## How agents are asked to use memory
 

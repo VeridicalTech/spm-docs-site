@@ -100,6 +100,16 @@ Successful hosted requests carry `x-spm-*` headers with the request/receipt ID, 
 
 A bypass is a safe fallback, not an error: SPM forwards the complete request rather than risking your provider's state.
 
+## Memory lookups on the proxy path
+
+Memory reads on proxy traffic are bounded so they never dominate your
+time-to-first-token: the lookup uses the fast path by default (no selector
+model rounds on the request path), captures of new content run in parallel
+with a hard deadline, and unchanged history is saved once rather than on
+every turn. When memory is briefly unavailable the request continues without
+injected context and the degradation is logged and visible on the receipt —
+never silent.
+
 ## Errors
 
 | HTTP | Example code | Meaning |
