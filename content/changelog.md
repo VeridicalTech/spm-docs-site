@@ -2,7 +2,7 @@
 title: Changelog
 description: Dated public changes to SPM interfaces, behavior, documentation, and supported integration boundaries.
 published: 2026-08-19
-updated: 2026-09-07
+updated: 2026-09-11
 applies_to: SPM public releases
 ---
 
@@ -11,6 +11,26 @@ applies_to: SPM public releases
 Selected user-facing product updates.
 
 Patch releases ship reliability fixes continuously; minor versions accompany measured capability changes published on the Benchmarks page.
+
+## 2026-09-11
+
+- **Lane ordering is live.** `explicit_first` now orders the final recall
+  evidence set: deliberate saves lead, passive proxy captures follow — across
+  both candidate evidence and source spans. `observed_only` answers only from
+  proxy-captured content. This completes the lane rollout announced on
+  2026-09-07.
+- **Recall responses now include an `evidence_decision`**: a machine-readable
+  verdict (`supported`, `insufficient`, `contradicted`, or `unknown`) with the
+  evidence and source IDs it is based on, an authority label, and — when
+  evidence is declined — why it failed support (for example a CJK coverage
+  floor). Treat `supported` as settled; treat `insufficient` as "keep
+  looking", not as an answer.
+- **Memories become recallable sooner and stop getting stuck.** New database
+  indexes cut the wait between saving a memory and it being ready to recall,
+  and empty extraction payloads are now skipped instead of parking in a
+  permanent retry state.
+- **Console dashboard improvements**: usage views paginate server-side and
+  refresh automatically instead of loading one giant slow query.
 
 ## 2026-09-07
 

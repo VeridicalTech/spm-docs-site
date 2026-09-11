@@ -2,7 +2,7 @@
 title: MCP server
 description: Connect an MCP client to SPM memory tools for governed remember, recall, read, delete, and status operations.
 published: 2026-08-19
-updated: 2026-09-05
+updated: 2026-09-11
 applies_to: SPM-Polaris V3.0.0
 ---
 
@@ -35,6 +35,7 @@ Scopes: `remember` requires `memory:write`; `recall`, `read`, and `status` requi
 - `evidence_refs` keep the broader supporting set, each with a short-lived read token.
 - Pass tokens to `read` verbatim (as a JSON array) to get the exact original text.
 - When nothing qualifies, you get an explicit no-evidence result with a machine-readable reason — never an invented answer.
+- `evidence_decision` is a machine-readable verdict on how strongly the returned evidence is backed (see below).
 
 ## Choosing a recall depth
 
@@ -58,9 +59,28 @@ console, direct API writes) and passive captures from proxy traffic. The
 - `observed_only` — answer only from passive captures; use it for "what did I
   say in chat" questions about proxy-captured content.
 
-The Provider Proxy's own continuity lookups use `blended`. The lane ordering
-for `explicit_first` is rolling out behind a paired evaluation gate; the
-parameter is accepted today and is a no-op until the gate completes.
+The Provider Proxy's own continuity lookups use `blended`. Lane ordering is
+active: `explicit_first` orders the final evidence set so deliberate saves
+lead and passive captures follow — across both candidate evidence and source
+spans, not just one of them.
+
+## Evidence decisions
+
+Every recall response carries an `evidence_decision` object that says how
+strongly the returned evidence backs the answer:
+
+- `status` — `supported` (the evidence passed the gate and backs the answer),
+  `insufficient` (candidates were found but none proved the claim),
+  `contradicted` (the verifier refuted the claim), or `unknown` (nothing to
+  judge, for example no candidates).
+- `evidence_ids` / `source_ids` — what the decision is based on.
+- `support_failure_kinds` — when status is `insufficient`, why the candidates
+  failed support (for example `cjk_floor` for a CJK coverage floor, `ascii`
+  for an exact ASCII term, `identifier` for an unattested identifier).
+- `authority` and `reason` — provenance of the judgment.
+
+Treat only `supported` answers as settled. `insufficient` means nothing was
+proven yet — rephrase, raise `top_k`, or switch to `deep` and look again.
 
 ## How agents are asked to use memory
 
