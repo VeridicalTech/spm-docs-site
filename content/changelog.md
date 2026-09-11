@@ -8,8 +8,6 @@ applies_to: SPM public releases
 
 # Changelog
 
-Selected user-facing product updates.
-
 Patch releases ship reliability fixes continuously; minor versions accompany measured capability changes published on the Benchmarks page.
 
 ## 2026-09-11
