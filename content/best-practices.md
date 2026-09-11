@@ -2,7 +2,7 @@
 title: Best practices
 description: Practical guidance for reliable, useful, and safe SPM memory.
 published: 2026-09-04
-updated: 2026-09-05
+updated: 2026-09-11
 applies_to: SPM-Polaris V3.0.0
 ---
 
@@ -54,9 +54,10 @@ Ask for the fact you need:
 Prefer one question per intent. Combining unrelated topics makes it harder to select
 the smallest sufficient evidence and increases context cost.
 
-SPM may return UNKNOWN when no stored evidence qualifies. Treat that as a useful
-answer: the system did not find enough trustworthy support. Do not silently replace
-UNKNOWN with a guess.
+SPM may refuse with a verdict of `unknown` (nothing to judge) or `insufficient`
+(candidates were found but none proved the claim). Treat that as a useful answer:
+the system did not find enough trustworthy support. Do not silently replace a
+refusal with a guess.
 
 ## 4. Choose the right interface
 
@@ -147,7 +148,7 @@ This preserves history instead of leaving two contradictory facts with no contex
 
 | Response | Meaning | Recommended action |
 |---|---|---|
-| UNKNOWN / no supporting memory | No evidence passed support checks | Rephrase, save the fact explicitly, or proceed without memory |
+| `unknown` / `insufficient` refusal | No evidence qualified, or none proved support | Rephrase, save the fact explicitly, or proceed without memory |
 | not_found from read | Token expired, changed, or is outside the scope | Run a fresh recall |
 | memory data plane unavailable | Temporary service or network problem | Retry with backoff; avoid tight loops |
 | DATA_PLANE_BACKPRESSURE | Write queue is busy | Wait for the indicated retry window |

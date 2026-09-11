@@ -2,7 +2,7 @@
 title: Benchmarks
 description: Current SPM-Polaris benchmark evidence, measurement boundaries, reproducibility requirements, result limitations, and invalid historical comparisons.
 published: 2026-08-19
-updated: 2026-09-05
+updated: 2026-09-11
 applies_to: SPM-Polaris V3.0.0
 ---
 
@@ -35,13 +35,15 @@ Measured on a frozen probe set (English and Chinese arms, reproducible from this
 
 Reading: the free `fast` path already declines every unanswerable question in the probe set. `auto` keeps that quality and only pays for deeper gathering when it is genuinely needed. `deep` exists for the hardest multi-part questions.
 
+Note: the latencies above come from the internal probe harness and exclude network and provider time. End-to-end production calls are slower: a 2026-09-11 single-conversation production probe measured `fast` at roughly 1-3 seconds and `deep` at roughly 5-6 seconds per question, including the multi-round selector.
+
 ## When token reduction appears
 
 Reduction needs both: a history long enough to matter, and older exchanges whose content is already stored as memory. Short, new, or fully protected conversations correctly show no reduction.
 
 ## Recall-quality status
 
-The current recall stack uses a privately operated Voyage 4 Nano-compatible embedding service and no hosted reranker. Historical LoCoMo figures measured with hosted Voyage Large/rerank or older evaluation shapes are not current evidence and are intentionally not quoted here. A new production-near number will be published only with its accuracy, abstention, latency, corpus state, and exact model/commit pins.
+The current recall stack uses a privately operated embedding service and no hosted reranker. Historical LoCoMo figures measured with hosted Voyage Large/rerank or older evaluation shapes are not current evidence and are intentionally not quoted here. A new production-near number will be published only with its accuracy, abstention, latency, corpus state, and exact model/commit pins.
 
 ## Methodology rules
 
