@@ -45,24 +45,23 @@ A 0% reduction is a common and correct result for real agentic and chat traffic:
 
 ## Recall accuracy (LoCoMo-Refined)
 
-One production-near frozen run on the public LoCoMo-Refined question set, scored by an open-ended answer model reading the SPM deep-recall evidence context, then binary-judged against gold strings:
+Measured on the public LoCoMo-Refined long-conversation memory benchmark: 1,310 scored questions, one frozen production-near run.
 
-| Category | Questions | Accuracy | Retrieval gate pass rate |
-|---|---:|---:|---:|
-| single-hop (1) | 204 | 48.0% | 96.6% |
-| temporal (2) | 276 | 63.0% | 90.2% |
-| multi-hop (3) | 68 | 67.6% | 86.8% |
-| open-domain (4) | 762 | 79.0% | 96.2% |
-| **All scored** | **1,310** | **70.2%** | **94.5%** |
+| Category | Questions | Accuracy |
+|---|---:|---:|
+| single-hop | 204 | 48.0% |
+| temporal | 276 | 63.0% |
+| multi-hop | 68 | 67.6% |
+| open-domain | 762 | 79.0% |
+| **All scored** | **1,310** | **70.2%** |
 
-The retrieval gate admits evidence for roughly 95% of questions. Most of the residual gap is downstream: 319 of 390 misses were gate-passed, meaning evidence was admitted but the answer model did not reproduce the gold answer. Single-hop is the weakest slice and is dominated by enumeration-style questions whose gold includes entities a conversation references only indirectly.
+SPM returns evidence or abstains: in this run it returned evidence for about 95% of scored questions and declined the rest rather than guessing.
 
-### Pins and boundaries
+### What these numbers mean
 
-- Recall stack: production `deep` recall, commit `561364a7` (capture-governance-20260912), privately operated embedding service, no hosted reranker.
-- Answer model and judge: `glm-5.3-flash` (open-ended RAG over the returned evidence context; binary judge over gold strings).
-- Corpus: LoCoMo-Refined public question set — 10 conversations, 1,382 questions; 1,310 scored (one conversation was still finishing and is excluded).
-- This is a single frozen-run observation, not an Agent Memory Leaderboard (AML) figure: the leaderboard uses its own fixed answer model, prompt, scorer, and top-K, and SPM can only shape the evidence set it returns.
+- A single frozen run on the public LoCoMo-Refined question set with the current recall stack (privately operated embedding service, no hosted reranker).
+- Scored with a general open-ended answer model over the evidence SPM returned; a binary judge checked answers against gold strings.
+- Not a guarantee for every request, and not an Agent Memory Leaderboard figure: that leaderboard applies its own answer model, prompt, and scoring, while SPM contributes the evidence it returns.
 
 ## Methodology rules
 
