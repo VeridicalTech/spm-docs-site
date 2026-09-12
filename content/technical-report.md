@@ -147,7 +147,7 @@ The production-near embedding and retrieval stack changed after earlier internal
 
 The current evidence does not establish:
 
-- current production-near recall or final-answer accuracy;
+- a production-near recall or final-answer accuracy tied to the leaderboard's own answer model and scorer; the Benchmarks page carries one pinned LoCoMo-Refined recall-accuracy observation (a single frozen run with a local answer model, not an AML score);
 - p95 or p99 latency distributions;
 - sustained soak or 100+ concurrency behavior;
 - equal quality across Hosted Proxy, Local Proxy, and MCP;

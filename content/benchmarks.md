@@ -2,7 +2,7 @@
 title: Benchmarks
 description: Current SPM-Polaris benchmark evidence, measurement boundaries, reproducibility requirements, result limitations, and invalid historical comparisons.
 published: 2026-08-19
-updated: 2026-09-11
+updated: 2026-09-12
 applies_to: SPM-Polaris V3.0.0
 ---
 
@@ -14,7 +14,7 @@ This page reports only currently valid evidence. Results measured with a differe
 
 | Observation | Result | Scope |
 |-------------|--------|-------|
-| Long-history request | 66,265 input tokens reduced to 365 forwarded; 279 recalled; **99.45% less provider input** | One real, eligible hosted Provider Proxy request |
+| Long-history request (extreme case) | One eligible request compressed 66,265 input tokens to 365 forwarded (279 recalled) — a ~99.5% reduction on that single request only | One real, eligible hosted Provider Proxy request; an upper bound, not a representative rate |
 | Agentic tool-output removal | 43k–53k fewer input tokens per request (about 85% of the removable tool-output bulk); upstream response time fell from ~2 minutes to ~35 seconds | Sampled production agentic sessions, 2026-08 |
 | Starter limiter burst | 30 successful requests + 15 HTTP 429 responses from a 45-request burst | One measured Starter 30 req/min window |
 | New memory readiness | ~8.2 seconds from save to recallable | One production remember/status round trip |
@@ -41,9 +41,28 @@ Note: the latencies above come from the internal probe harness and exclude netwo
 
 Reduction needs both: a history long enough to matter, and older exchanges whose content is already stored as memory. Short, new, or fully protected conversations correctly show no reduction.
 
-## Recall-quality status
+A 0% reduction is a common and correct result for real agentic and chat traffic: only long, eligible, already-memorized histories reduce at all. The 66,265-token example above is one extreme eligible request, not a user-facing average saving rate, and must not be read as one.
 
-The current recall stack uses a privately operated embedding service and no hosted reranker. Historical LoCoMo figures measured with hosted Voyage Large/rerank or older evaluation shapes are not current evidence and are intentionally not quoted here. A new production-near number will be published only with its accuracy, abstention, latency, corpus state, and exact model/commit pins.
+## Recall accuracy (LoCoMo-Refined)
+
+One production-near frozen run on the public LoCoMo-Refined question set, scored by an open-ended answer model reading the SPM deep-recall evidence context, then binary-judged against gold strings:
+
+| Category | Questions | Accuracy | Retrieval gate pass rate |
+|---|---:|---:|---:|
+| single-hop (1) | 204 | 48.0% | 96.6% |
+| temporal (2) | 276 | 63.0% | 90.2% |
+| multi-hop (3) | 68 | 67.6% | 86.8% |
+| open-domain (4) | 762 | 79.0% | 96.2% |
+| **All scored** | **1,310** | **70.2%** | **94.5%** |
+
+The retrieval gate admits evidence for roughly 95% of questions. Most of the residual gap is downstream: 319 of 390 misses were gate-passed, meaning evidence was admitted but the answer model did not reproduce the gold answer. Single-hop is the weakest slice and is dominated by enumeration-style questions whose gold includes entities a conversation references only indirectly.
+
+### Pins and boundaries
+
+- Recall stack: production `deep` recall, commit `561364a7` (capture-governance-20260912), privately operated embedding service, no hosted reranker.
+- Answer model and judge: `glm-5.3-flash` (open-ended RAG over the returned evidence context; binary judge over gold strings).
+- Corpus: LoCoMo-Refined public question set — 10 conversations, 1,382 questions; 1,310 scored (one conversation was still finishing and is excluded).
+- This is a single frozen-run observation, not an Agent Memory Leaderboard (AML) figure: the leaderboard uses its own fixed answer model, prompt, scorer, and top-K, and SPM can only shape the evidence set it returns.
 
 ## Methodology rules
 
