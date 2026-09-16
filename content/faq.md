@@ -3,7 +3,7 @@ title: FAQ
 description: Answers about SPM hosting, Local Proxy, MCP, provider billing, memory refusal, evidence, compression, privacy, deletion, and availability.
 published: 2026-08-19
 updated: 2026-09-05
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 schema: FAQPage
 ---
 

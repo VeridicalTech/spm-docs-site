@@ -3,7 +3,7 @@ title: Your memory
 description: How SPM writes, retrieves, admits, reads, and deletes memory with provenance, evidence gates, scopes, and verifiable lifecycle controls.
 published: 2026-08-19
 updated: 2026-09-05
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 ---
 
 # Your memory

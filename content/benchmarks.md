@@ -3,7 +3,7 @@ title: Benchmarks
 description: Current SPM-Polaris benchmark evidence, measurement boundaries, reproducibility requirements, result limitations, and invalid historical comparisons.
 published: 2026-08-19
 updated: 2026-09-12
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 ---
 
 # Benchmarks

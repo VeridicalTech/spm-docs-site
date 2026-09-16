@@ -1,9 +1,9 @@
 ---
 title: SPM Documentation
-description: Official documentation for SPM and SPM-Polaris V3.0.0, including Hosted Provider Proxy, Local Proxy, MCP, governed memory, evidence, and operations.
+description: Official documentation for SPM and SPM-Polaris, including Hosted Provider Proxy, Local Proxy, MCP, governed memory, evidence, and operations.
 published: 2026-08-19
 updated: 2026-09-05
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 schema: WebPage
 ---
 

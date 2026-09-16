@@ -1,9 +1,9 @@
 ---
 title: How SPM works
-description: Architecture of SPM-Polaris V3.0.0 across hosted memory, provider traffic, recall, compression, storage, deletion, and failure behavior.
+description: Architecture of SPM-Polaris across hosted memory, provider traffic, recall, compression, storage, deletion, and failure behavior.
 published: 2026-08-19
 updated: 2026-09-05
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 ---
 
 # How SPM works

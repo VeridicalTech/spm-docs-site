@@ -3,7 +3,7 @@ title: Roadmap
 description: Near-term SPM-Polaris roadmap items, ordered by value. All items are in active development; no dates are promised.
 published: 2026-08-26
 updated: 2026-09-11
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 ---
 
 # Roadmap

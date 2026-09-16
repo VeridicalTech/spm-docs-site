@@ -3,7 +3,7 @@ title: Compare
 description: How SPM-Polaris positions against adjacent memory, agent-runtime, and gateway products, with dated competitor pricing snapshots and explicit fit boundaries.
 published: 2026-08-26
 updated: 2026-08-26
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 ---
 
 # Compare

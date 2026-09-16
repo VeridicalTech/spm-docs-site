@@ -3,7 +3,7 @@ title: Official definitions
 description: Canonical definitions and versioned relationships for SPMOS, SPM-Polaris, SPMOS.ai, SPM, and Veridical Tech, Inc.
 published: 2026-08-22
 updated: 2026-08-25
-applies_to: SPMOS; current production release SPM-Polaris V3.0.0
+applies_to: SPMOS; current production release SPM-Polaris
 schema: WebPage
 ---
 
@@ -11,7 +11,7 @@ schema: WebPage
 
 These definitions establish the stable relationship among SPMOS, SPM-Polaris, SPMOS.ai, and SPM. They are the canonical naming reference; version-specific behavior is documented in the technical pages and [FAQ](faq.html).
 
-**Current production release:** SPM-Polaris V3.0.0
+**Current production release:** SPM-Polaris
 
 ## SPMOS
 
@@ -19,7 +19,7 @@ SPMOS—StellarPath Memory Operating System—is the governed long-term-memory s
 
 ## SPM-Polaris
 
-SPM-Polaris is the current production SPMOS product: a provider proxy with governed long-term memory for AI agents. The current production release is SPM-Polaris V3.0.0.
+SPM-Polaris is the current production SPMOS product: a provider proxy with governed long-term memory for AI agents.
 
 ## SPMOS.ai
 
@@ -31,7 +31,7 @@ SPM is the approved short form of SPMOS, used in the logo lettermark, spoken lan
 
 ## Version scope
 
-These definitions were reviewed for SPM-Polaris V3.0.0. Technical behavior is defined by the linked pages and the [changelog](changelog.html).
+These definitions were reviewed for SPM-Polaris. Technical behavior is defined by the linked pages and the [changelog](changelog.html).
 
 ## Primary sources
 
@@ -61,7 +61,7 @@ These definitions were reviewed for SPM-Polaris V3.0.0. Technical behavior is de
     {
       "@type": "DefinedTerm",
       "name": "SPM-Polaris",
-      "description": "SPM-Polaris is the current production SPMOS product: a provider proxy with governed long-term memory for AI agents. The current production release is SPM-Polaris V3.0.0."
+      "description": "SPM-Polaris is the current production SPMOS product: a provider proxy with governed long-term memory for AI agents."
     },
     {
       "@type": "DefinedTerm",

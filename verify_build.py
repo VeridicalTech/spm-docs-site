@@ -199,7 +199,7 @@ def main() -> None:
 
     security = (DIST / "security.html").read_text(encoding="utf-8")
     require("SPM applies security controls" in security, "security.html: SPM security subject missing")
-    require("SPM-Polaris V3.0.0 release" in security, "security.html: implementation scope missing")
+    require("SPM-Polaris release" in security, "security.html: implementation scope missing")
 
     sidebar_sample = (DIST / "index.html").read_text(encoding="utf-8")
     require('<p class="nav-section">Legal</p>' in sidebar_sample, "Legal sidebar section missing")

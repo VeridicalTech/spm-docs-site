@@ -3,7 +3,7 @@ title: Choose an integration
 description: Compare SPM-Polaris Hosted Provider Proxy, Local Proxy, and MCP by credential custody, model traffic, memory data, receipts, and operating responsibility.
 published: 2026-08-22
 updated: 2026-08-22
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 ---
 
 # Choose an integration

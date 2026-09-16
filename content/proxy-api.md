@@ -3,7 +3,7 @@ title: Provider proxy API
 description: SPM Hosted Provider Proxy API endpoints, native request dialects, memory and compression modes, response headers, receipts, and errors.
 published: 2026-08-19
 updated: 2026-09-05
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 ---
 
 # Provider Proxy API

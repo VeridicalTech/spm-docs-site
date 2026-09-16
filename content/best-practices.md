@@ -3,7 +3,7 @@ title: Best practices
 description: Practical guidance for reliable, useful, and safe SPM memory.
 published: 2026-09-04
 updated: 2026-09-11
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 ---
 
 # Best practices

@@ -3,7 +3,7 @@ title: Plans & quotas
 description: SPM memory-plan allowances, request and storage limits, billing boundaries, provider charges, and no-automatic-overage behavior.
 published: 2026-08-19
 updated: 2026-09-05
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 ---
 
 # Plans & quotas

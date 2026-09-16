@@ -1,9 +1,9 @@
 ---
 title: SPM-Polaris technical report
-description: First-party SPM-Polaris V3.0.0 report on evidence-governed memory, protected context compilation, integration boundaries, deletion, observations, and limitations.
+description: First-party SPM-Polaris report on evidence-governed memory, protected context compilation, integration boundaries, deletion, observations, and limitations.
 published: 2026-08-23
 updated: 2026-08-23
-applies_to: SPM-Polaris V3.0.0; evidence cutoff 2026-08-23
+applies_to: SPM-Polaris; evidence cutoff 2026-08-23
 social_image: https://docs.spmos.ai/assets/spmos-technical-report-social.png
 ---
 
@@ -16,7 +16,7 @@ social_image: https://docs.spmos.ai/assets/spmos-technical-report-social.png
 **Contact:** contact@spmos.ai<br>
 **Status:** First-party technical report; not peer reviewed or independently evaluated
 
-> This report describes the public behavior and evidence boundaries of SPM-Polaris V3.0.0. It is not an SLA, compliance certification, legal opinion, investment memorandum, or universal performance guarantee.
+> This report describes the public behavior and evidence boundaries of SPM-Polaris. It is not an SLA, compliance certification, legal opinion, investment memorandum, or universal performance guarantee.
 
 ## Abstract
 
@@ -47,7 +47,7 @@ Long-term memory = governed state maintained across requests and time
 
 ## 2. System scope
 
-SPM means StellarPath Memory Operating System, the product family developed by Veridical Tech, Inc. SPM-Polaris V3.0.0 is the current production product.
+SPM means StellarPath Memory Operating System, the product family developed by Veridical Tech, Inc. SPM-Polaris is the current production product.
 
 SPM-Polaris is not:
 

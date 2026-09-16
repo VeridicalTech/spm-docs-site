@@ -3,7 +3,7 @@ title: Authentication & API keys
 description: Create and protect SPM API keys, choose least-privilege memory scopes, and configure authentication for hosted proxy and MCP clients.
 published: 2026-08-19
 updated: 2026-09-05
-applies_to: SPM-Polaris V3.0.0
+applies_to: SPM-Polaris
 ---
 
 # Authentication & API keys
