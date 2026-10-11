@@ -261,6 +261,7 @@ def render_page(slug: str, metadata: dict[str, str], body_html: str, *, toc_toke
         .replace("{{PRODUCT_RELEASE}}", html.escape(PRODUCT_RELEASE))
         .replace("{{NAV}}", "\n".join(nav))
         .replace("{{PAGE_TOC}}", toc_html)
+        .replace('class="shell"', 'class="shell with-page-toc"' if toc_html else 'class="shell"', 1)
         .replace("{{BREADCRUMB}}", breadcrumb)
         .replace("{{CONTENT}}", body_html)
     )
