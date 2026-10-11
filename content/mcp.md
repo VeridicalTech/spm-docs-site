@@ -2,7 +2,7 @@
 title: MCP server
 description: Connect an MCP client to SPM memory tools for governed remember, recall, read, delete, and status operations.
 published: 2026-08-19
-updated: 2026-09-11
+updated: 2026-10-11
 applies_to: SPM-Polaris
 ---
 
@@ -23,7 +23,7 @@ The production server name is **SPM**. Tool names are exactly `remember`, `recal
 |------|--------------|----------------------|
 | `remember` | Saves one memory, idempotently | `text`, `idempotency_key`, optional `source_id`, `topic`, and `user_partition` |
 | `status` | Reports whether saved memories are ready to recall | optional `source_ids[]` |
-| `recall` | Answers a question with the strongest saved evidence | `question`, optional `top_k` (default 20; raise it for broader evidence coverage), optional `depth`, `lane_policy`, and `user_partition` |
+| `recall` | Answers a question with the strongest saved evidence | `question` (one intent, fully qualified — see [Best practices](best-practices.html#ask-focused-recall-questions)), optional `top_k` (default 20; raise it for broader evidence coverage), optional `depth`, `lane_policy`, and `user_partition` |
 | `read` | Fetches the exact original text behind a recall result | `read_tokens[]` and optional `user_partition` |
 | `delete` | Removes one memory and everything derived from it | `source_id`, `idempotency_key` |
 
@@ -124,7 +124,11 @@ Restart the client after adding a server so it reloads the tool catalog. A 401 `
 
 1. `remember` with a stable idempotency key.
 2. Poll `status` until the memory is ready.
-3. `recall` with a natural-language question.
+3. `recall` with one focused question — the single fact you need, with every
+   qualifier the answer depends on:
+
+       "What deployment checks are required before changing the Polaris project?"
+
 4. `read` when exact original text or multiple premises are needed.
 5. `delete` test data when the workflow is complete.
 

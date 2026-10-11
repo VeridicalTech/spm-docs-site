@@ -1,8 +1,8 @@
 ---
 title: Best practices
-description: Practical guidance for reliable, useful, and safe SPM memory.
+description: Practical guidance for reliable, useful, and safe SPM memory, including how to phrase recall questions.
 published: 2026-09-04
-updated: 2026-09-11
+updated: 2026-10-11
 applies_to: SPM-Polaris
 ---
 
@@ -47,12 +47,31 @@ duplicates.
 
 ## 3. Ask focused recall questions
 
-Ask for the fact you need:
+A recall question should be **minimal and sufficient**: name the one fact you
+need, and include every qualifier the answer depends on. Both halves matter —
+too broad, and you get an evidence dump instead of an answer; too narrow, and
+the gate cannot find what you already saved.
 
-    What deployment checks are required before changing the Polaris project?
+| Question | Verdict |
+|----------|---------|
+| What deployment checks are required before changing the Polaris project? | Good — one intent, names the subject and the decision point |
+| Tell me about the Polaris project. | Too broad — invites a dump instead of the one fact you need |
+| `deployment checks` | Too narrow — keywords alone cannot say which project or which decision |
+| What deployment checks are required before changing Polaris, and who approved the budget? | Two intents — split into two recalls |
 
-Prefer one question per intent. Combining unrelated topics makes it harder to select
-the smallest sufficient evidence and increases context cost.
+Rules that follow from the table:
+
+- **One intent per recall.** Split compound questions and run them separately.
+- **Name the subject and the decision point.** Qualifiers such as "before
+  changing X", "for project Y", or "as of last week" let the evidence gate
+  pick the smallest sufficient set.
+- **Do not pad.** "Please tell me..." and "I was wondering..." add tokens,
+  not information.
+- **Ask in the language you saved in** when you can. Cross-language recall
+  works, but exact saved terms still match most reliably.
+- **If a recall refuses, split before you broaden.** A refused compound
+  question usually means one premise was unsupported — splitting tells you
+  which one.
 
 SPM may refuse with a verdict of `unknown` (nothing to judge) or `insufficient`
 (candidates were found but none proved the claim). Treat that as a useful answer:
@@ -91,11 +110,14 @@ eligible saved text still use hosted SPM.
 
 Memory is most useful when it supplies the minimum sufficient context:
 
-- Ask for the specific decision or preference needed now.
-- Prefer a small top_k for simple questions.
-- Increase top_k only when the question genuinely needs multiple facts.
-- For multi-part questions, ask each premise explicitly or verify that all premises
-  are covered by the returned evidence.
+- Ask for the specific decision or preference needed now (see section 3 for
+  how to shape that question).
+- Prefer a small `top_k` for simple questions; raise it only when the question
+  genuinely needs multiple facts.
+- For multi-part work, run one recall per premise instead of one broad recall
+  for everything.
+- After recall, verify every premise your task depends on is covered by
+  returned evidence — an uncovered premise is a silent gap, not a refusal.
 
 More memory is not automatically better. A large mixed context can bury the relevant
 fact and increase model input cost.

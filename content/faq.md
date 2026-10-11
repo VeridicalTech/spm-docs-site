@@ -2,7 +2,7 @@
 title: FAQ
 description: Answers about SPM hosting, Local Proxy, MCP, provider billing, memory refusal, evidence, compression, privacy, deletion, and availability.
 published: 2026-08-19
-updated: 2026-09-05
+updated: 2026-10-11
 applies_to: SPM-Polaris
 schema: FAQPage
 ---
@@ -35,6 +35,9 @@ Recall says so explicitly, with a machine-readable reason — instead of returni
 
 **Which recall depth should I use?**  
 Keep the default `auto`. It answers most questions with a free bounded lookup and only pays for deeper gathering when the question genuinely needs it. Use `deep` for hard multi-part questions, `fast` when you want guaranteed zero extra model cost.
+
+**How should I phrase a recall question?**  
+Ask for one fact, with the qualifiers it depends on: "What deployment checks are required before changing the Polaris project?" — not "tell me about Polaris" and not a bare keyword list. See [Best practices](best-practices.html#ask-focused-recall-questions).
 
 **Can another account see my memory?**  
 No. Every memory belongs to your tenant, and results are checked against your account before being returned.

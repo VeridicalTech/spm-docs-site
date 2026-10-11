@@ -196,7 +196,7 @@ def structured_data(slug: str, metadata: dict[str, str], body_html: str) -> str:
     return json.dumps(graph, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
 
 
-def render_page(slug: str, metadata: dict[str, str], body_html: str) -> str:
+def render_page(slug: str, metadata: dict[str, str], body_html: str, *, toc_tokens: list | None = None) -> str:
     sections: dict[str, list[tuple[str, str, str]]] = {}
     for s, section, t in PAGES:
         if not section:
@@ -219,6 +219,22 @@ def render_page(slug: str, metadata: dict[str, str], body_html: str) -> str:
             '<nav class="breadcrumbs" aria-label="Breadcrumb">'
             '<a href="/">Documentation</a><span aria-hidden="true">/</span>'
             f'<span aria-current="page">{html.escape(title)}</span></nav>'
+        )
+    toc_html = ""
+    flat: list[dict] = []
+    for token in toc_tokens or []:
+        flat.extend(token.get("children", []) or [token])
+    if len(flat) >= 3:
+        items = "".join(
+            f'<a class="toc-link" href="#{html.escape(item["id"])}">'
+            f'{html.escape(item["name"])}</a>'
+            for item in flat
+        )
+        toc_html = (
+            '<nav class="page-toc" aria-label="On this page">'
+            '<p class="nav-section">On this page</p>'
+            + items
+            + "</nav>"
         )
     page_meta = (
         '<p class="page-meta">'
@@ -244,6 +260,7 @@ def render_page(slug: str, metadata: dict[str, str], body_html: str) -> str:
         .replace("{{PRODUCT_VERSION}}", html.escape(PRODUCT_VERSION))
         .replace("{{PRODUCT_RELEASE}}", html.escape(PRODUCT_RELEASE))
         .replace("{{NAV}}", "\n".join(nav))
+        .replace("{{PAGE_TOC}}", toc_html)
         .replace("{{BREADCRUMB}}", breadcrumb)
         .replace("{{CONTENT}}", body_html)
     )
@@ -318,12 +335,14 @@ def main() -> None:
     pages: list[tuple[str, dict[str, str]]] = []
     for slug in expected_slugs:
         metadata, raw = parse_source(CONTENT / f"{slug}.md")
+        md = markdown.Markdown(extensions=MD_EXTENSIONS)
         body = canonicalize_internal_links(
-            protect_versioned_package_names(
-                markdown.markdown(raw, extensions=MD_EXTENSIONS)
-            )
+            protect_versioned_package_names(md.convert(raw))
         )
-        (DIST / f"{slug}.html").write_text(render_page(slug, metadata, body), encoding="utf-8")
+        (DIST / f"{slug}.html").write_text(
+            render_page(slug, metadata, body, toc_tokens=md.toc_tokens),
+            encoding="utf-8",
+        )
         pages.append((slug, metadata))
         print(f"  {slug}.html")
     (DIST / "404.html").write_text(NOT_FOUND_TEMPLATE, encoding="utf-8")

@@ -2,7 +2,7 @@
 title: Your memory
 description: How SPM writes, retrieves, admits, reads, and deletes memory with provenance, evidence gates, scopes, and verifiable lifecycle controls.
 published: 2026-08-19
-updated: 2026-09-05
+updated: 2026-10-11
 applies_to: SPM-Polaris
 ---
 
@@ -38,6 +38,11 @@ Your memory is not a pile of frozen notes. As related facts accumulate, SPM cons
 ## Asking questions (recall)
 
 Ask in natural language. You get back the strongest saved evidence for your question — with references back to the original text — not an invented answer.
+
+Shape the question to name one fact and the qualifiers it depends on —
+"What deployment checks are required before changing the Polaris project?",
+not "tell me about Polaris". See [Best practices](best-practices.html#ask-focused-recall-questions)
+for the full pattern.
 
 When nothing in memory actually answers the question, SPM says so explicitly instead of returning a look-alike answer. The refusal carries a machine-readable reason, so your agent can tell "not saved" apart from "search unavailable".
 
