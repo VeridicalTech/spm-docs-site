@@ -77,7 +77,10 @@ body {
 .shell.with-page-toc {
   grid-template-columns: 240px minmax(0, 1fr) 200px;
 }
+.shell.with-page-toc .content { grid-column: 2; }
 .page-toc {
+  grid-column: 3;
+  grid-row: 1;
   position: sticky;
   top: 56px;
   align-self: start;
