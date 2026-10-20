@@ -2,7 +2,7 @@
 title: Choose an integration
 description: Compare SPM-Polaris Hosted Provider Proxy, Local Proxy, and MCP by credential custody, model traffic, memory data, receipts, and operating responsibility.
 published: 2026-08-22
-updated: 2026-08-22
+updated: 2026-10-20
 applies_to: SPM-Polaris
 ---
 
@@ -18,12 +18,14 @@ SPM-Polaris supports three integration paths. They use the same governed, hosted
 | Provider credential | SPM-hosted custody | Permissions-restricted local config; sent directly to provider | Application custody |
 | Memory invocation | Automatic in request path | Automatic unless memory mode is off | Explicit tools |
 | Data sent to SPM | Provider requests and eligible memory content | SPM key and eligible query or memory content | Content submitted to memory tools |
-| Provider-traffic receipt | Hosted signed gateway receipt | Local response headers; no hosted gateway receipt | Not applicable |
+| Provider-traffic receipt | Hosted request metadata and memory outcomes; receipt lookup has no token counts or signature | Local response headers; no hosted gateway receipt | Not applicable |
 | Runtime responsibility | SPM operates proxy and memory | You operate local runtime; SPM operates memory | You orchestrate provider and tools; SPM operates memory |
 
 ## Hosted Provider Proxy
 
-Choose this path when a managed compatible endpoint and hosted request accounting fit your operating model. SPM receives the model request, runs governed recall and compression, forwards the request in its native API dialect, streams the response, and records the signed request receipt.
+Choose this path when a managed compatible endpoint and hosted request accounting fit your operating model. SPM receives the model request, runs governed recall and eligible compression, forwards the request in the configured provider's API dialect, streams the response, and records request metadata and memory outcomes.
+
+Hosted receipt lookup does not expose per-request token counts or a cryptographic signature. Dashboard token-savings views are a separate surface. Signed purge receipts and evidence read tokens are not signed provider-request receipts. Compression can omit stored exchanges and elide tool outputs; source readiness does not establish complete semantic recall or guarantee an agent's answer.
 
 The upstream provider credential is held by the SPM-hosted service and used to authenticate provider forwarding. Provider requests and eligible memory content pass through SPM. See the [Hosted Proxy quickstart](quickstart.html), [provider configuration](providers.html), and [Provider proxy API](proxy-api.html).
 
@@ -33,7 +35,7 @@ Choose this path when the provider-facing credential and request hop should rema
 
 The upstream provider credential is not sent to or stored by SPM. It is stored in a permissions-restricted local configuration file and sent directly from the local proxy to the configured upstream provider. The package does not encrypt that file. The SPM API key and eligible query or memory content still reach hosted SPM unless memory mode is disabled.
 
-Local Proxy is not a fully local, offline, or self-hosted SPM deployment. Provider traffic does not receive the hosted gateway's signed receipt or hosted token accounting. See the [Local Proxy setup guide](local-proxy.html), [source code](https://github.com/VeridicalTech/spm-local-proxy), and [npm package](https://www.npmjs.com/package/@spmos/local-proxy).
+Local Proxy is not a fully local, offline, or self-hosted SPM deployment. Provider traffic does not create hosted gateway request receipts or hosted token accounting. Local response headers are not provider billing records. See the [Local Proxy setup guide](local-proxy.html), [source code](https://github.com/VeridicalTech/spm-local-proxy), and [npm package](https://www.npmjs.com/package/@spmos/local-proxy).
 
 ## MCP
 

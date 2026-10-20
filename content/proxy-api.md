@@ -2,13 +2,13 @@
 title: Provider proxy API
 description: SPM Hosted Provider Proxy API endpoints, native request dialects, memory and compression modes, response headers, receipts, and errors.
 published: 2026-08-19
-updated: 2026-09-05
+updated: 2026-10-20
 applies_to: SPM-Polaris
 ---
 
 # Provider Proxy API
 
-The Provider Proxy sends your request to your configured model provider, applies your memory settings, shortens long conversation history when it is safe, and records a receipt for every request.
+The Provider Proxy sends your request to your configured model provider, applies your memory settings, can shorten eligible conversation history, and records hosted request receipts.
 
 Base URL: `https://api.spmos.ai`
 
@@ -22,7 +22,7 @@ Hosted model endpoints authenticate with `Authorization: Bearer spm_live_...`; A
 | `POST /v1/responses` | OpenAI Responses |
 | `POST /v1/messages` | Anthropic Messages |
 
-Provider JSON and SSE bytes are relayed in their native dialect. Unknown fields, event ordering, reasoning/tool state, and provider identifiers are passed through unchanged.
+Provider responses are relayed as JSON or SSE in their native dialect. Memory injection and compression can change the outgoing request; this is not a promise of byte-identical request forwarding.
 
 ## Memory modes
 
@@ -52,8 +52,8 @@ x-spm-compression-mode: passthrough | shadow | deterministic
 | Mode | What your provider receives |
 |------|------------------------------|
 | `passthrough` | The original request, plus recalled memory when available |
-| `shadow` | The original request unchanged; SPM only measures what compression would have done, so you can evaluate it risk-free |
-| `deterministic` | Older exchanges are removed when their content is safely stored as memory. The two most recent exchanges, your instructions, tool state, and model reasoning are always kept. |
+| `shadow` | Compression is measured rather than applied to the forwarded history |
+| `deterministic` | Eligible older history may be shortened after source-readiness checks. Recent exchanges and protected instructions, reasoning, and tool state constrain removal; eligible older tool results may also be shortened. |
 
 Memory and compression are independent: you can save and recall memory without shortening anything, or measure compression without saving.
 
@@ -72,43 +72,46 @@ GET /v1/spm/requests?limit=50
 GET /v1/spm/requests/{receipt_id}
 ```
 
-Receipt lookup requires the `receipt:read` scope. Key fields:
+Receipt lookup requires the `receipt:read` scope. The lookup response contains request metadata and lifecycle state, not token-count fields:
 
 | Field | Meaning |
 |-------|---------|
-| `original_input_tokens` | Estimated input SPM received |
-| `forwarded_input_tokens` | Estimated input actually sent to the provider |
-| `recalled_tokens` | Memory added to the provider prompt |
-| `output_tokens` | Provider output tokens when reported |
-| `memory_mode` / `memory_state` | Requested access and what actually happened |
-| `compression_mode` | Effective mode after any safe fallback |
+| `id` / `request_id` | Receipt and request identifiers |
+| `protocol` / `model` | Request dialect and model |
+| `memory_mode` / `memory_state` | Memory access mode and processing state |
+| `compression_mode` | Effective compression mode |
+| `request_state` / `billing_state` | Request and SPM billing lifecycle state |
+| `bytes_sent` | Recorded delivered-byte count |
+| `provider_usage_state` | Whether provider usage was reported; not a token count |
+| `error_code` | Recorded error, if any |
+| `created_at` / `updated_at` / `terminal_at` | Lifecycle timestamps |
 
-The dashboard **Token savings** and **Recent request receipts** views are built from these records. Local Proxy traffic does not create hosted receipts.
+The console exposes usage and savings separately from this lookup schema. These request receipts are not signed deletion receipts. Local Proxy traffic does not create hosted receipts.
+
+### Reading usage numbers
+
+SPM's original, forwarded, and recalled input-token counts are estimates, not provider billing-grade measurements. Reduction estimates do not establish invoice savings: provider caching, pricing, and other billing rules can differ. Only a provider-reported output counter is evidence of reported output usage; a missing counter must not be interpreted as zero. Your provider's invoice remains separate from SPM usage and is authoritative for its charges.
 
 ## Response headers
 
-Successful hosted requests carry `x-spm-*` headers with the request/receipt ID, memory and compression state, and token estimates. `x-spm-continuity-state` tells you what happened to older history:
+Successful hosted requests carry `x-spm-*` headers with the request/receipt ID and memory and compression state. When compression measurements are available, `x-spm-shadow-original-tokens` and `x-spm-shadow-forwarded-tokens` contain input estimates, not provider billing counts. `x-spm-continuity-state` describes the history decision:
 
 | Value | Meaning |
 |-------|---------|
-| `committed` | Older exchanges were removed because recalled memory provably covers them |
-| `elided_tool_output` | Older tool outputs were removed after being safely stored; they remain retrievable on demand |
+| `committed` | Older eligible exchanges were removed after their sources passed readiness checks |
+| `elided_tool_output` | Eligible older tool results were shortened after storage/readiness checks |
 | `not_needed` | Nothing needed removing |
 | `shadow_only` | Compression was measured but the original request was forwarded |
 | `bypassed_*` | A safety check did not pass, so the full request was preserved |
 | `not_applicable` | The active mode did not require a continuity decision |
 
-A bypass is a safe fallback, not an error: SPM forwards the complete request rather than risking your provider's state.
+A bypass means a particular compression check prevented removal; it is not proof that no other eligible transformation occurred. Source readiness does not prove that every fact will appear in a later recall. Tool-result capture is eligible for trimming, and raw JSON restoration is not a shipped guarantee. Keep original artifacts when exact reproduction matters.
 
 ## Memory lookups on the proxy path
 
-Memory reads on proxy traffic are bounded so they never dominate your
-time-to-first-token: the lookup uses the fast path by default (no selector
-model rounds on the request path), captures of new content run in parallel
-with a hard deadline, and unchanged history is saved once rather than on
-every turn. When memory is briefly unavailable the request continues without
-injected context and the degradation is logged and visible on the receipt —
-never silent.
+Memory reads use the fast path by default, with bounded work rather than selector model rounds on the request path. Lookup latency can still affect time-to-first-token. A failed lookup can continue without injected context, with a degraded memory state. Compression separately checks source readiness; lookup failure does not by itself guarantee that the original history is forwarded unchanged.
+
+Automatic capture is best-effort. A failed capture is not guaranteed durable retry work; verify important material with memory status and read tools rather than relying on a successful model response as proof of storage.
 
 ## Errors
 

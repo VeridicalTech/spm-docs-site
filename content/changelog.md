@@ -2,27 +2,33 @@
 title: Changelog
 description: Dated public changes to SPM interfaces, behavior, documentation, and supported integration boundaries.
 published: 2026-08-19
-updated: 2026-09-11
+updated: 2026-10-20
 applies_to: SPM public releases
 ---
 
 # Changelog
 
-Patch releases ship reliability fixes continuously; minor versions accompany measured capability changes published on the Benchmarks page.
+This page records dated public changes. Historical entries describe the behavior announced at the time, not a current performance guarantee.
+
+## 2026-10-20 — Documentation reconciliation
+
+- Clarified the relationship between **SPMOS** (the master brand), **SPM** (the short form), and **SPM-Polaris** (the current production product), together with existing integration and credential boundaries.
+- Reconciled documentation with verified existing interfaces, including MCP evidence reads by source ID, compatibility tools, and bounded tool-output stubs on the Responses path. These are documentation clarifications, not claims that those interfaces first shipped today.
+- Published the completed official AML II Full evaluation's final score of **52.83**, attributed as the final evaluation platform result reported by SPM. The [Benchmarks page](benchmarks.html) separates it from historical LoCoMo, token-reduction, and latency observations; no current public AML II rank is claimed.
+- Clarified that eligible tool results can be captured, while tool-call arguments, reasoning, and signatures are excluded. A failed save is not guaranteed to retry, and readiness guards are not a losslessness guarantee.
 
 ## 2026-09-11
 
-- **Lane ordering is live.** `explicit_first` now orders the final recall
-  evidence set: deliberate saves lead, passive proxy captures follow — across
-  both candidate evidence and source spans. `observed_only` answers only from
-  proxy-captured content. This completes the lane rollout announced on
-  2026-09-07.
+- **Lane policy is documented.** `explicit_first`, `blended`, and
+  `observed_only` describe the requested recall treatment. Strict lane
+  isolation remains an evaluation-gated deployment treatment; this entry does
+  not claim that it is active in every production cell.
 - **Recall responses now include an `evidence_decision`**: a machine-readable
   verdict (`supported`, `insufficient`, `contradicted`, or `unknown`) with the
   evidence and source IDs it is based on, an authority label, and — when
   evidence is declined — why it failed support (for example a CJK coverage
-  floor). Treat `supported` as settled; treat `insufficient` as "keep
-  looking", not as an answer.
+  floor). Treat `supported` as evidence support under that evaluation,
+  not settled truth; treat `insufficient` as "keep looking", not as an answer.
 - **Memories become recallable sooner and stop getting stuck.** New database
   indexes cut the wait between saving a memory and it being ready to recall,
   and empty extraction payloads are now skipped instead of parking in a
@@ -207,9 +213,3 @@ Patch releases ship reliability fixes continuously; minor versions accompany mea
 ## 2026-08-14
 
 - Improved memory deletion reliability and retrieval quality.
-
-## 2026-09-05
-
-- Added end-user memory partitions: one application key can now serve multiple users
-  while keeping each user's saved memory separate. The dashboard API-key flow exposes
-  the memory:partition scope, and MCP requests can carry a stable user_partition.

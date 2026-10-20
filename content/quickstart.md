@@ -2,7 +2,7 @@
 title: Quickstart
 description: Start with SPM Hosted Provider Proxy, Local Proxy, or MCP and verify the chosen credential and memory boundary.
 published: 2026-08-19
-updated: 2026-09-05
+updated: 2026-10-20
 applies_to: SPM-Polaris
 ---
 
@@ -19,7 +19,7 @@ Recommended scopes:
 - Any Provider Proxy or Local Proxy use: keep `gateway:invoke` selected (the console
   pre-selects it) — without it the proxy refuses model requests with 403
 - Provider Proxy or Local Proxy with full memory: `memory:read` and `memory:write`
-- MCP explicit memory: add `memory:delete` only if the agent should delete memories
+- MCP explicit memory: `memory:read` and `memory:write`; add `memory:delete` only if the agent should delete memories
 - Hosted receipt lookup: add `receipt:read`
 - One key for several end users: add `memory:partition` and send a stable `user_partition` value
 
@@ -29,7 +29,7 @@ Your key's scopes set the strongest memory access it can use. A single request c
 
 ### Option A — Hosted Provider Proxy
 
-The simplest path: SPM forwards your requests, and your dashboard shows token savings and receipts for every request.
+The simplest path: SPM forwards your requests, and your dashboard provides token-savings views and hosted request receipts.
 
 1. In the console, open **Settings → Providers**.
 2. Choose a preset provider and the models you want, or add a **Custom** upstream with its Base URL, API style, key, and optional headers.
@@ -78,22 +78,45 @@ See [Local Proxy](local-proxy.html) before using custom headers or query paramet
 
 Use MCP when the agent should save and find memories explicitly, without changing how it sends model requests:
 
+Set `SPM_API_KEY` in the environment used to launch Codex, outside the configuration file:
+
+```bash
+export SPM_API_KEY="spm_live_..."
+```
+
 ```toml
 [mcp_servers.spm]
 url = "https://api.spmos.ai/mcp"
-headers = { Authorization = "Bearer spm_live_..." }
+bearer_token_env_var = "SPM_API_KEY"
 ```
 
-The production server name is **SPM** and the tools are exactly `remember`, `recall`, `read`, `delete`, and `status`.
+This uses the [official Codex Streamable HTTP configuration](https://developers.openai.com/codex/mcp#streamable-http-servers). Do not commit the key; restart the client with the environment variable available.
+
+The production server name is **SPM**. Its five primary tools are `remember`, `recall`, `read`, `delete`, and `status`; compatibility aliases `add_memory`, `search_memory`, and `delete_memory` may also appear in the catalog.
 
 ## 3. Verify what happened
 
-- **Hosted proxy:** open the dashboard — **Token savings** and **Recent request receipts** show what each request did. Programmatic access: `GET /v1/spm/requests`.
+- **Hosted proxy:** open **Token savings** and **Recent request receipts** in the dashboard. `GET /v1/spm/requests` provides request metadata and memory outcomes, not per-request token counts or cryptographic signatures.
 - **Local Proxy:** inspect the local `x-spm-*` response headers. Local Proxy requests do not create hosted receipts.
+- **MCP:** verify a complete save → ready → recall → read round trip, not just a successful connection or tool listing. See the [MCP round trip](mcp.html#recommended-round-trip).
+
+For example, ask the agent to call `remember` with this tool-argument object (choose a fresh source ID and idempotency key for your test):
+
+```json
+{
+  "text": "The docs-smoke project deployment window is Friday at 16:00 UTC.",
+  "source_id": "docs-smoke-20261020-01",
+  "idempotency_key": "docs-smoke-20261020-01-save"
+}
+```
+
+Call `status` with `{"source_ids":["docs-smoke-20261020-01"]}` and wait for that source to be searchable. A failed or missing source is not ready. Then call `recall` with `{"question":"When is the docs-smoke project deployment window?"}`.
+
+Check the returned evidence against your saved fact, then pass `evidence_refs[].read_token` verbatim as an element of `read_tokens` to `read` and check the original text. Readiness alone does not prove recall completeness. Delete the test source afterward with `delete`, using the same `source_id` and a new `idempotency_key` (requires `memory:delete`).
 
 ## 4. When will I see savings?
 
-Savings appear when a conversation is long enough that its older parts are already stored as memory and can stop being resent. Short or new conversations correctly show no reduction — there was nothing safe to remove yet. This is expected behavior, not a malfunction.
+Savings can appear when eligible older exchanges are stored as sources and omitted from the forwarded prompt. Short or new conversations can correctly show no reduction. The result depends on the request and memory settings; compression and source readiness do not promise that semantic recall will recover every detail. Read original sources when exact content matters.
 
 ## Next steps
 

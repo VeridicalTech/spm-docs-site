@@ -2,7 +2,7 @@
 title: Plans & quotas
 description: SPM memory-plan allowances, request and storage limits, billing boundaries, provider charges, and no-automatic-overage behavior.
 published: 2026-08-19
-updated: 2026-09-05
+updated: 2026-10-20
 applies_to: SPM-Polaris
 ---
 
@@ -14,17 +14,21 @@ In plain terms: your SPM plan limits memory use, while your model provider bills
 
 ## Plans
 
+The amounts below are the published plan catalog, not a live checkout quote.
+Confirm the current total and availability in **Billing** before purchase; a
+disabled checkout means no billing mutation is attempted.
+
 | | Free | Starter | Growth | Enterprise |
 |---|---|---|---|---|
 | Monthly price | $0 | $9 | $15 | Custom |
-| Yearly price | — | $99 (two months free) | $150 (two months free) | Custom |
+| Yearly price | — | $99 | $150 | Custom |
 | API rate limit | 10 requests/min | 30 requests/min | 100 requests/min | Reviewed before activation |
 | Memory writes / month | 500 | 3,000 | 8,000 | Reviewed before activation |
 | Stored memories | 1,000 | 10,000 | 50,000 | Reviewed before activation |
 | Provider channels | 1 | 3 | 10 | Reviewed before activation |
 | Support | Community | Email | Priority | Dedicated |
 
-Monthly and yearly SKUs of the same plan unlock identical quotas; the yearly SKU simply costs two months less.
+Monthly and yearly SKUs of the same plan unlock identical quotas. Compare the displayed annual total with twelve monthly payments; the discount is not necessarily the same for every plan.
 
 ## How limits are enforced
 

@@ -2,7 +2,7 @@
 title: Official definitions
 description: Canonical definitions and versioned relationships for SPMOS, SPM-Polaris, SPMOS.ai, SPM, and Veridical Tech, Inc.
 published: 2026-08-22
-updated: 2026-08-25
+updated: 2026-10-20
 applies_to: SPMOS; current production release SPM-Polaris
 schema: WebPage
 ---
@@ -11,7 +11,7 @@ schema: WebPage
 
 These definitions establish the stable relationship among SPMOS, SPM-Polaris, SPMOS.ai, and SPM. They are the canonical naming reference; version-specific behavior is documented in the technical pages and [FAQ](faq.html).
 
-**Current production release:** SPM-Polaris
+**Current production product:** SPM-Polaris
 
 ## SPMOS
 
@@ -31,7 +31,7 @@ SPM is the approved short form of SPMOS, used in the logo lettermark, spoken lan
 
 ## Version scope
 
-These definitions were reviewed for SPM-Polaris. Technical behavior is defined by the linked pages and the [changelog](changelog.html).
+These definitions were reviewed on October 20, 2026. SPMOS is the master brand, SPM is its approved short form, and SPM-Polaris remains the current production product. Technical behavior is defined by the linked pages and the [changelog](changelog.html).
 
 ## Primary sources
 

@@ -2,7 +2,7 @@
 title: Best practices
 description: Practical guidance for reliable, useful, and safe SPM memory, including how to phrase recall questions.
 published: 2026-09-04
-updated: 2026-10-11
+updated: 2026-10-20
 applies_to: SPM-Polaris
 ---
 
@@ -90,8 +90,9 @@ Use MCP when your agent can call tools explicitly:
 4. delete when a source must be removed;
 5. status when you need readiness without loading content.
 
-The normal path is recall, then read. Do not call read first without a read token
-returned by recall.
+The normal path is recall, then read. Read accepts returned `read_tokens[]` or
+`source_ids[]` from evidence references or history stubs. Copy those values; do not
+invent identifiers. Direct source-ID reads still enforce current access checks.
 
 ### Provider Proxy
 
@@ -130,10 +131,12 @@ resolution, or an audit trail.
 Best practices:
 
 - Copy evidence_refs[].read_token exactly; do not parse or re-serialize it.
+- Alternatively, copy a returned source ID into `source_ids[]`; this is not an access-control bypass.
 - Send tokens as an array, even for one token.
 - Read several needed tokens in one call instead of making one call per token.
 - Call read soon after recall; read tokens are short-lived.
 - Treat expired or invalid tokens as not_found, not as valid evidence.
+- Distinguish a call-level `error` from `not_found`: an unavailable service does not prove a token expired or a source is absent.
 
 If read is slow, check whether the client is making repeated single-token calls.
 Batch tokens from one recall whenever possible.
@@ -154,6 +157,7 @@ Good practices:
 
 - Keep sensitive or transient work in an explicitly excluded path.
 - Save the final user-owned decision explicitly with remember.
+- Check readiness for critical saves; a failed automatic capture is not guaranteed a durable background retry.
 - Delete a source when it was captured by mistake.
 - Avoid repeatedly pasting the same long transcript; repetition makes topics harder
   to distinguish.
@@ -179,6 +183,9 @@ This preserves history instead of leaving two contradictory facts with no contex
 Do not treat a transient error as proof that memory is absent. Conversely, a successful
 HTTP response does not prove that the requested fact was found: inspect the status,
 evidence count, and evidence references.
+
+Likewise, `supported` means the support gate passed, not that the saved statement
+is independently true or that every premise of your task has been checked.
 
 ## 11. Measure quality and cost honestly
 
@@ -230,8 +237,8 @@ needs:
 | `memory:write` | Remember facts for the current user partition |
 | `memory:partition` | Allow the key to select an end-user partition |
 
-Then pass the same partition on every memory operation for that user. With MCP, the
-pattern is:
+Then pass the same partition on every `remember`, `recall`, and `read` call for
+that user. With MCP, a remember payload is:
 
 ```json
 {
@@ -245,6 +252,11 @@ Use `user_partition: "user-123"` on the corresponding `recall` and `read` calls.
 SPM binds the value to the request and evidence token, so a recall in `user-456`
 cannot return `user-123` memory. A key that lacks `memory:partition` is rejected when
 it attempts to select a non-empty partition.
+
+MCP `status` and `delete` have no `user_partition` parameter. Use the returned
+source IDs to target them: `source_ids[]` for status and `source_id` for delete.
+Your application must authenticate users and authorize their partition and source-ID
+access. Possession of a partition-capable application key is not end-user authorization.
 
 Keep the value stable across sessions and environments, and test the three important
 cases: a user can see their own memory, a different user cannot see it, and an

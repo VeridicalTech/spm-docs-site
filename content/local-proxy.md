@@ -2,7 +2,7 @@
 title: Local Proxy
 description: Install and operate the SPM Local Proxy while keeping the provider credential and provider traffic on a machine you control.
 published: 2026-08-21
-updated: 2026-09-05
+updated: 2026-10-20
 applies_to: SPM-Polaris and @spmos/local-proxy 0.1.x
 ---
 
@@ -12,7 +12,7 @@ applies_to: SPM-Polaris and @spmos/local-proxy 0.1.x
 
 It is **not** self-hosted SPM — your memory lives in the hosted service either way. What stays local is the provider credential and the full model traffic.
 
-Current npm release: **`@spmos/local-proxy@0.1.2`**. It adds the same conversation-continuity, capture-hygiene, and tool-output elision protections as the Hosted Provider Proxy.
+Current npm release: **`@spmos/local-proxy@0.1.2`**. This package has its own release lifecycle; do not assume that every Hosted Provider Proxy feature or fix is included.
 
 ## Install
 
@@ -41,18 +41,11 @@ Both `spm` and `spm-local-proxy` invoke the same CLI.
 
 Your client—not the Local Proxy—chooses the model for each request.
 
-## Default configuration
+## Configuration
 
-| Setting | Default |
-|---------|---------|
-| Bind | `127.0.0.1:8765` |
-| Memory mode | `read-write` |
-| Compression mode | `deterministic` |
-| Input budget | 8,192 estimated tokens |
-| Maximum recalled context | 512 estimated tokens |
-| SPM API | `https://api.spmos.ai` |
+Review the address, memory/compression modes, and budgets selected by `spm setup` before starting. The client examples below use a listener at `127.0.0.1:8765`; substitute your configured address if it differs. Use `https://api.spmos.ai` for hosted memory.
 
-Configuration is stored under `$SPM_CONFIG_HOME`, `$XDG_CONFIG_HOME/spm`, or `~/.config/spm`, with owner-only file permissions.
+Configuration is stored under `$SPM_CONFIG_HOME`, `$XDG_CONFIG_HOME/spm`, or `~/.config/spm`. Treat this directory as secret-bearing and restrict access to your local account.
 
 ## Client configuration
 
@@ -87,17 +80,13 @@ OpenAI-compatible SDKs use `http://127.0.0.1:8765/v1`. Anthropic Messages traffi
 | Eligible captured text | Transient | Yes | Already part of model traffic | Originates in request/response |
 | Full provider request | Transient | No | Yes | Originates in your client |
 
-Custom headers or query values containing `$API_KEY` are secrets and are protected with the same local file permissions.
+Custom headers or query values containing `$API_KEY` are secrets too. Do not include them in shared configuration or diagnostic output.
 
-## What 0.1.2 protects
+## Continuity and capture limits
 
-- The two most recent exchanges are never removed from a request.
-- Older history is removed only when its content is provably covered by recalled memory; otherwise the full request is sent.
-- Old tool outputs are replaced by short retrievable stubs once the identical content is safely stored in memory and can be recalled — on every supported protocol, including Anthropic Messages (tool pairing is never broken, and prompt-cache breakpoints are never touched).
-- Reasoning, thinking blocks, tool-call arguments, and partial streamed JSON are never saved as memory.
-- Every response carries `x-spm-continuity-state` so you can see which decision was made, plus `x-spm-elided-items` / `x-spm-elided-tokens` when stubs were used.
+Compression and tool-output elision can shorten older history. A stored or ready source does not prove that recall will return every fact from it. Eligible captured tool results may be trimmed; do not treat memory as a lossless archive or assume that raw tool JSON can be restored on demand.
 
-Optional knobs: `proxy.elisionEnabled` (default on), `proxy.elisionKeepRounds` (default 4), `proxy.elisionCaptureLimit` (default 8).
+Automatic capture is best-effort, not a guaranteed durable retry queue. Keep original files and logs when exact recovery matters, and verify important memories with status and read tools. Hosted behavior alone is not evidence of identical behavior in this npm release.
 
 ## Local endpoints
 
@@ -111,21 +100,20 @@ Optional knobs: `proxy.elisionEnabled` (default on), `proxy.elisionKeepRounds` (
 
 JSON and SSE are supported; zstd request bodies used by Codex are decoded.
 
-## Security controls
+## Security checklist
 
-- accepts connections only from the local machine
-- uses a separate random local token for your client
-- rejects browser-origin and unexpected-host requests
-- requires an HTTPS provider URL and validates the address before use
-- strips SPM, cookie, forwarding, and client-IP headers before forwarding
-- masks config output and never logs request or response bodies
-- 10 MiB request-body limit
+- Keep the listener on loopback; do not expose it as a shared gateway.
+- Use the separate local token printed for your client, not your provider or SPM key.
+- Use an HTTPS provider URL you trust.
+- Protect local configuration, custom headers, and diagnostic output as credentials.
 
 You remain responsible for the provider URL you choose, that provider's retention/training settings, and your local machine's security.
 
 ## Observability
 
 Responses include `x-spm-local-proxy`, memory/compression state, original/forwarded/recalled token estimates, and `x-spm-continuity-state`.
+
+These input-token counts are SPM estimates, not provider billing-grade usage. Only provider-reported output usage is evidence of the provider's output count; the provider invoice is separate.
 
 Local Proxy requests do **not** create hosted receipts, so they do not appear in the dashboard **Token savings** or **Recent request receipts** views. Use the local response headers for per-request evidence.
 

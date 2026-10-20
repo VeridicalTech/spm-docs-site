@@ -2,7 +2,7 @@
 title: Authentication & API keys
 description: Create and protect SPM API keys, choose least-privilege memory scopes, and configure authentication for hosted proxy and MCP clients.
 published: 2026-08-19
-updated: 2026-09-05
+updated: 2026-10-20
 applies_to: SPM-Polaris
 ---
 
@@ -60,7 +60,7 @@ Console sign-in uses separate credentials from agent keys. A leaked agent key ca
 
 Local Proxy stores the SPM key and provider key in its protected local configuration and gives the downstream harness a separate random local token. The provider key goes directly to the configured upstream; the SPM key goes only to hosted memory endpoints.
 
-In plain terms: the harness receives only a local token, while the two provider-facing keys stay in Local Proxy's local configuration.
+In plain terms: the harness receives only a local token, while the SPM and provider keys stay in Local Proxy's local configuration and are sent to their respective services.
 
 Treat all three values as secrets. `spm config` masks them; `spm config token` intentionally prints the local harness token.
 
@@ -72,9 +72,14 @@ The console accepts email or unique username login. Google and GitHub sign-in ar
 
 One application key can serve multiple end users without putting everyone in one
 memory space. Give the key the `memory:partition` scope and send a stable opaque
-`user_partition` value with each memory operation. Use an internal user UUID when
-possible, not a display name or secret.
+`user_partition` value on MCP `remember`, `recall`, and `read` calls. MCP `delete`
+and `status` do not accept this parameter. Use an internal user UUID when possible,
+not a display name or secret. See [MCP server](mcp.html#one-key-many-end-users).
 
 Requests that select a non-empty partition require `memory:partition` in addition to
 the normal `memory:read` or `memory:write` scope. Requests without a partition use the
 tenant's default space.
+
+Keep the same partition when saving, recalling, and reading evidence. A read token
+issued for one partition cannot be used in another. Do not treat an omitted
+partition as a way to search across all of your application's users.

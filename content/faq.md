@@ -2,7 +2,7 @@
 title: FAQ
 description: Answers about SPM hosting, Local Proxy, MCP, provider billing, memory refusal, evidence, compression, privacy, deletion, and availability.
 published: 2026-08-19
-updated: 2026-10-11
+updated: 2026-10-20
 applies_to: SPM-Polaris
 schema: FAQPage
 ---
@@ -25,19 +25,19 @@ No. The memory service is hosted. Local Proxy is a local traffic component for c
 ## Your memory
 
 **What does SPM save?**  
-What you explicitly save (MCP `remember`, console) and — through the proxy — your messages and the assistant's visible replies. Reasoning, thinking blocks, tool-call arguments, and partial streamed JSON are never saved as memory.
+What you explicitly save (MCP `remember`, console) and — when automatic capture is enabled — eligible messages, visible assistant replies, and tool results from proxy traffic. Eligible tool results may be trimmed. Reasoning, thinking blocks, tool-call arguments, and partial streamed JSON are excluded from automatic memory capture. Automatic capture is best-effort; a successful model request does not prove that its content was stored or guarantee durable retries after capture failure.
 
 **What happens when I change my mind about something?**  
-Your memory evolves: related facts consolidate into observations that show the current state and keep the earlier state as history. You will not end up with two contradictory memories fighting each other.
+SPM can consolidate related facts and retain historical context, but it cannot guarantee perfect conflict resolution. State the correction explicitly, including what changed and when, then inspect the recalled evidence. Delete obsolete material if it should no longer be available.
 
 **What happens when the answer isn't in memory?**  
-Recall says so explicitly, with a machine-readable reason — instead of returning a look-alike answer. Your agent can then ask you or look elsewhere.
+Recall can return no usable evidence with a machine-readable reason. That does not prove the fact never existed in memory: retrieval can miss relevant material. Your agent should inspect the evidence, then ask you or look elsewhere rather than invent an answer.
 
 **Which recall depth should I use?**  
 Keep the default `auto`. It answers most questions with a free bounded lookup and only pays for deeper gathering when the question genuinely needs it. Use `deep` for hard multi-part questions, `fast` when you want guaranteed zero extra model cost.
 
 **How should I phrase a recall question?**  
-Ask for one fact, with the qualifiers it depends on: "What deployment checks are required before changing the Polaris project?" — not "tell me about Polaris" and not a bare keyword list. See [Best practices](best-practices.html#ask-focused-recall-questions).
+Ask for one fact, with the qualifiers it depends on: "What deployment checks are required before changing the Polaris project?" — not "tell me about Polaris" and not a bare keyword list. See [Best practices](best-practices.html#3-ask-focused-recall-questions).
 
 **Can another account see my memory?**  
 No. Every memory belongs to your tenant, and results are checked against your account before being returned.
@@ -45,7 +45,10 @@ No. Every memory belongs to your tenant, and results are checked against your ac
 ## Cost and savings
 
 **When will I see token savings?**  
-When conversations get long: once older exchanges are safely stored as memory, they stop being resent to the model. Short conversations correctly show no reduction.
+When eligible older history can be shortened under the active compression policy. Short conversations may correctly show no reduction. A stored or ready source is not proof that every fact will be recalled later; memory is not a lossless archive of the original conversation or tool JSON.
+
+**Are the token numbers my provider's bill?**
+No. SPM input-token and reduction figures are estimates, not provider billing-grade measurements. Only provider-reported output counters establish reported output usage; missing usage is not zero. Your provider invoice is separate, and caching or pricing rules can change the actual cost.
 
 **What does SPM charge for?**  
 Your SPM plan covers memory features (see [Plans & quotas](plans.html)). Model usage is billed by your provider directly — SPM does not resell inference.
@@ -78,4 +81,4 @@ Until you clear memory, a deleted ID stays blocked so deleted content cannot rea
 Local Proxy exposes per-request `x-spm-*` headers. It does not create hosted receipts or appear in dashboard savings views.
 
 **Why did my request go through unchanged?**  
-A safety check did not pass — for example the memory lookup was unavailable or could not prove coverage for the older history. SPM always prefers sending the complete request over risking your provider's state.
+A compression check may have prevented removal, or the request may have had nothing eligible to shorten. Inspect its memory, compression, and continuity state. Source readiness is checked separately from recall: a failed lookup does not guarantee unchanged history, and readiness does not prove complete recall coverage. Eligible tool-output shortening may also occur independently.

@@ -1,13 +1,13 @@
 ---
-title: SPM-Polaris technical report
-description: First-party SPM-Polaris report on evidence-governed memory, protected context compilation, integration boundaries, deletion, observations, and limitations.
+title: SPM OS technical report
+description: First-party SPM OS report on evidence-governed memory and context management, preserving the August 23, 2026 evidence cutoff with a dated editorial update.
 published: 2026-08-23
-updated: 2026-08-23
-applies_to: SPM-Polaris; evidence cutoff 2026-08-23
+updated: 2026-10-20
+applies_to: SPMOS / SPM-Polaris; report evidence cutoff 2026-08-23
 social_image: https://docs.spmos.ai/assets/spmos-technical-report-social.png
 ---
 
-# SPM-Polaris: Evidence-Governed Memory and Context Management for Long-Horizon AI Agents
+# SPM OS: Evidence-Governed Memory and Context Management for Long-Horizon AI Agents
 
 **Technical report:** Version 1.0<br>
 **Publication date:** August 23, 2026<br>
@@ -18,13 +18,15 @@ social_image: https://docs.spmos.ai/assets/spmos-technical-report-social.png
 
 > This report describes the public behavior and evidence boundaries of SPM-Polaris. It is not an SLA, compliance certification, legal opinion, investment memorandum, or universal performance guarantee.
 
+> **Editorial status — October 20, 2026:** Version 1.0 retains its August 23, 2026 evidence cutoff. SPMOS is the master brand, SPM is its approved short form, and SPM-Polaris remains the current production product. Since that cutoff, SPM reports the completed official AML II Full evaluation with a final score of **52.83**. See [Benchmarks](benchmarks.html#aml-ii-completed-official-full-evaluation) for attribution and publication limits. No current public AML II rank is verified here. This editorial update does not turn the report's historical observations into current measurements or independent certification.
+
 ## Abstract
 
 Long context and long-term memory solve different problems. A context window is the input space of one model request. Long-term memory is a cross-request lifecycle involving selective writing, candidate retrieval, evidence admission, context compilation, provider-state preservation, deletion, and auditability.
 
-SPM-Polaris is the current SPM product: a provider proxy with governed long-term memory for AI agents. It separates candidate retrieval from evidence admission, protects provider-native state during context reduction, refuses unsupported memory, and records request-level evidence and token boundaries. Hosted Provider Proxy, Local Proxy, and MCP use the hosted SPM memory plane but differ in credential custody, model-traffic routing, invocation, receipts, and operating responsibility.
+At the report's evidence cutoff, SPM-Polaris described a provider proxy with governed long-term memory for AI agents under the SPMOS master brand. It separates candidate retrieval from evidence admission, protects provider-native state during context reduction, refuses unsupported memory, and records request-level evidence and token boundaries. Hosted Provider Proxy, Local Proxy, and MCP use the hosted SPM memory plane but differ in credential custody, model-traffic routing, invocation, receipts, and operating responsibility.
 
-This report presents the architecture, current bounded first-party observations, limitations, and an evaluation agenda. It intentionally excludes withdrawn historical accuracy and comparative-efficiency figures that do not yet satisfy the current republication gate.
+This report presents the architecture, bounded first-party observations, limitations, and evaluation agenda as of August 23, 2026. It intentionally excludes earlier withdrawn accuracy and comparative-efficiency figures that did not satisfy the republication gate at that cutoff.
 
 ## 1. Long context is not long-term memory
 
@@ -47,7 +49,7 @@ Long-term memory = governed state maintained across requests and time
 
 ## 2. System scope
 
-SPM means StellarPath Memory Operating System, the product family developed by Veridical Tech, Inc. SPM-Polaris is the current production product.
+SPMOS means StellarPath Memory Operating System, developed by Veridical Tech, Inc.; SPM is the approved short name. SPM-Polaris is the current production product name; it is not a separate brand family.
 
 SPM-Polaris is not:
 
@@ -79,7 +81,7 @@ Eligible source content
 
 Memory can enter through explicit MCP `remember` calls, console/source operations, or eligible visible text captured around Provider Proxy and Local Proxy exchanges.
 
-The observer uses a separate capture copy. Visible user text and eligible visible assistant text can be captured. Reasoning summaries, thinking or redacted-thinking blocks, tool/function arguments, signatures, and partial JSON remain provider protocol state and are excluded from memory capture.
+The observer uses a separate capture copy. Visible user text, eligible visible assistant text, and eligible tool-result text can be captured. Reasoning summaries, thinking or redacted-thinking blocks, tool/function call arguments, signatures, and partial JSON remain provider protocol state and are excluded from memory capture. Capture eligibility does not guarantee a successful save or retry after a failed save. Readiness guards constrain use of stored content; they do not establish lossless capture.
 
 ### 3.2 Candidate retrieval and evidence admission
 
@@ -129,9 +131,9 @@ A source tombstone prevents the same source identity from being re-enqueued in t
 
 Deletion from active systems does not imply immediate disappearance from pre-existing backups, write-ahead logs, replicas, provider records, or customer-side copies before their documented retention or rotation periods.
 
-## 7. Current bounded first-party observations
+## 7. Bounded first-party observations at the report cutoff
 
-The current public evidence contains observations, not universal benchmarks or guarantees.
+The public evidence at the August 23, 2026 cutoff contains observations, not universal benchmarks or guarantees. These historical measurements are not current SLOs or general quality claims.
 
 | Observation | Result | Boundary |
 |---|---:|---|
@@ -141,13 +143,13 @@ The current public evidence contains observations, not universal benchmarks or g
 | One production MCP remember-to-read sequence | Stored and read text matched byte-for-byte | Not a general integrity-rate benchmark |
 | One warm historical MCP recall | 4.93 seconds | One observation; not a distribution or SLO |
 
-The production-near embedding and retrieval stack changed after earlier internal runs. Historical accuracy, evidence-containment, and comparative token-efficiency values remain withdrawn from public promotion until a new immutable result package satisfies the republication gate.
+At the report cutoff, the production-near embedding and retrieval stack had changed after earlier internal runs. Earlier accuracy, evidence-containment, and comparative token-efficiency values were withdrawn from public promotion pending a new immutable result package. Later results and their separate evidence boundaries are recorded on the [Benchmarks page](benchmarks.html).
 
 ## 8. Limitations
 
-The current evidence does not establish:
+The evidence available at the August 23, 2026 report cutoff did not establish:
 
-- a production-near recall or final-answer accuracy tied to the leaderboard's own answer model and scorer; the Benchmarks page carries one pinned LoCoMo-Refined recall-accuracy observation (a single frozen run with a local answer model, not an AML score);
+- a final result tied to the leaderboard's own evaluation; the later completed AML II Full result is documented separately on the [Benchmarks page](benchmarks.html), alongside a historical LoCoMo-Refined observation using a different answer model and scoring setup;
 - p95 or p99 latency distributions;
 - sustained soak or 100+ concurrency behavior;
 - equal quality across Hosted Proxy, Local Proxy, and MCP;
@@ -157,7 +159,7 @@ The current evidence does not establish:
 
 ## 9. Evaluation agenda
 
-Useful next experiments include:
+The evaluation agenda at the report cutoff included:
 
 1. immutable production-near reruns with exact commits, configuration, model and embedding identities, corpus identifiers, launch commands, raw per-case outputs, exclusions, and digests;
 2. paired Proxy, Local Proxy, and MCP experiments controlling the downstream model, tool schema, invocation policy, context placement, judge, and seed;
@@ -187,10 +189,10 @@ Useful next experiments include:
 
 ## Disclosure and rights
 
-Veridical Tech, Inc. develops SPM and SPM-Polaris and therefore has a direct product interest in this report. The observations are first-party and have not been independently reproduced. AI-assisted editorial review was used to help reorganize and polish the report; Veridical Tech, Inc. reviewed the public claim boundaries and accepts responsibility for the published content.
+Veridical Tech, Inc. develops SPMOS and SPM-Polaris, and therefore has a direct product interest in this report. The report's observations are first-party and have not been independently reproduced. AI-assisted editorial review was used to help reorganize and polish the report; Veridical Tech, Inc. reviewed the public claim boundaries and accepts responsibility for the published content.
 
 Suggested citation:
 
-> Veridical Tech, Inc. (2026). *SPM-Polaris: Evidence-Governed Memory and Context Management for Long-Horizon AI Agents* (Version 1.0). https://docs.spmos.ai/technical-report
+> Veridical Tech, Inc. (2026). *SPM OS: Evidence-Governed Memory and Context Management for Long-Horizon AI Agents* (Version 1.0; originally published as SPM-Polaris, August 23, 2026; editorial update October 20, 2026). https://docs.spmos.ai/technical-report
 
 Copyright © 2026 Veridical Tech, Inc. All rights reserved. Public reading and citation are permitted. Redistribution or derivative publication requires permission from the publisher.

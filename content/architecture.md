@@ -2,7 +2,7 @@
 title: How SPM works
 description: Architecture of SPM-Polaris across hosted memory, provider traffic, recall, compression, storage, deletion, and failure behavior.
 published: 2026-08-19
-updated: 2026-09-05
+updated: 2026-10-20
 applies_to: SPM-Polaris
 ---
 
@@ -40,11 +40,11 @@ Your configured SPM keys keep working even if the console is unavailable — mod
 
 ## What becomes memory
 
-Only conversation content that would be visible to you: your messages and the assistant's visible replies. Model reasoning, thinking blocks, tool-call arguments, partial JSON, and signatures travel to and from your provider but never become memory.
+Eligible user messages, visible assistant replies, and supported tool-result text can become memory under your capture policy. Model reasoning, thinking blocks, tool-call arguments, partial JSON, and signatures travel to and from your provider but never become memory.
 
 ## When history gets shorter
 
-When a conversation is long, SPM stops resending older exchanges whose content is safely stored as memory. It always keeps recent messages, your instructions, tool state, and reasoning intact. If any safety check fails — for example the memory lookup is unavailable — the complete original request is sent instead. A full-history request is the safe fallback, never a failure.
+When a conversation is long, SPM can shorten eligible older history after checking source readiness and protected context. Recent context and protocol-sensitive content are guarded against unsafe trimming. These checks do not prove semantic losslessness: saved evidence and a shorter request are not equivalent to keeping every original detail in context. If trimming is not eligible, SPM can forward full history instead; forwarding still depends on normal request validation and provider limits.
 
 ## Deletion boundary
 
@@ -57,6 +57,6 @@ Deleting removes memory from active storage and verifies it is gone. **Clear mem
 | Rate limiter unavailable | The request is blocked (`503`) instead of guessed |
 | No saved memory answers the question | An explicit no-evidence result, never an invented answer |
 | Provider unavailable | A normal provider-shaped error; your memory is unaffected |
-| Memory saving unavailable | Your model request completes; saving is retried later |
+| Memory saving unavailable | Model forwarding may continue with degraded capture; durable background retry is not guaranteed. Explicitly save critical facts and check readiness |
 | Console unavailable | Existing SPM keys keep working on the request service |
 | Memory lookup degraded | An explicit failure or a smaller result — never another account's memory |

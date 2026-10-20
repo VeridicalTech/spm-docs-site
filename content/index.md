@@ -2,7 +2,7 @@
 title: SPM Documentation
 description: Official documentation for SPM and SPM-Polaris, including Hosted Provider Proxy, Local Proxy, MCP, governed memory, evidence, and operations.
 published: 2026-08-19
-updated: 2026-09-05
+updated: 2026-10-20
 applies_to: SPM-Polaris
 schema: WebPage
 ---
@@ -16,8 +16,8 @@ SPMOS.ai is the official website and canonical public source for SPMOS.
 What that means for you:
 
 - **Your agent remembers.** Facts, decisions, and preferences from earlier sessions can be found again — captured automatically through the proxy, or saved explicitly through memory tools.
-- **Long conversations stop growing.** Once the older parts of a conversation are safely stored as memory, they no longer need to be resent to the model on every request. You pay for fewer input tokens; the agent still has the facts.
-- **Your agent stays honest.** When an answer is not in memory, SPM says so instead of guessing — and records why.
+- **Long conversations can use fewer input tokens.** Eligible older exchanges can be stored as sources and omitted from later prompts. Source readiness does not guarantee that every fact will be found by semantic recall; read the source when exact details matter.
+- **Memory results have evidence boundaries.** Recall can return evidence or an explicit no-evidence result. This does not guarantee that your model provider or agent will never guess or hallucinate.
 - **Your memory evolves with you.** When something changes — a preference, a configuration, a decision — SPM records the current state and keeps the earlier state as history, instead of silently overwriting it.
 - **You can delete, verifiably.** Remove one memory, all of it, or your whole account, with a signed record of what was removed.
 
@@ -45,9 +45,9 @@ Hosted interfaces accept an `spm_live_...` key. Local Proxy gives your harness a
 
 1. SPM authenticates your key and applies your plan and provider settings.
 2. It looks for saved memory that genuinely helps with the current request.
-3. If the conversation is long, older exchanges whose content is safely stored are no longer resent. Recent messages, your instructions, tool state, and model reasoning are always kept intact.
-4. The request reaches your provider in its native dialect, and the response streams back unchanged.
-5. A receipt records the request: how many input tokens you would have sent, how many you actually sent, and which memory was used.
+3. For eligible long conversations, SPM can omit older exchanges after source-readiness checks. Compression is not a universal losslessness guarantee: tool outputs can also be elided, and stored text is not a guarantee of complete semantic recall.
+4. SPM forwards the request in the configured provider's API dialect and streams the response back.
+5. Hosted request receipts provide request metadata and memory-processing outcomes. Token-savings views are separate: the receipt lookup API does not return per-request token counts or a signed request receipt. Signed purge receipts and read tokens serve different purposes.
 
 ## Start here
 
