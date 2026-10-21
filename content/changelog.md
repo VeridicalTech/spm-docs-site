@@ -14,7 +14,6 @@ This page records dated public changes. Historical entries describe the behavior
 
 - Clarified the relationship between **SPMOS** (the master brand), **SPM** (the short form), and **SPM-Polaris** (the current production product), together with existing integration and credential boundaries.
 - Reconciled documentation with verified existing interfaces, including MCP evidence reads by source ID, compatibility tools, and bounded tool-output stubs on the Responses path. These are documentation clarifications, not claims that those interfaces first shipped today.
-- Published the completed official AML II Full evaluation's final score of **52.83**, attributed as the final evaluation platform result reported by SPM. The [Benchmarks page](benchmarks.html) separates it from historical LoCoMo, token-reduction, and latency observations; no current public AML II rank is claimed.
 - Clarified that eligible tool results can be captured, while tool-call arguments, reasoning, and signatures are excluded. A failed save is not guaranteed to retry, and readiness guards are not a losslessness guarantee.
 
 ## 2026-09-11
