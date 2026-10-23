@@ -2,13 +2,19 @@
 title: Changelog
 description: Dated public changes to SPM interfaces, behavior, documentation, and supported integration boundaries.
 published: 2026-08-19
-updated: 2026-10-20
+updated: 2026-10-23
 applies_to: SPM public releases
 ---
 
 # Changelog
 
 This page records dated public changes. Historical entries describe the behavior announced at the time, not a current performance guarantee.
+
+## 2026-10-23 — Plan pricing and metered recall overage
+
+- **Plan prices changed**: Starter is now \$29/month (\$290/year) and Growth \$99/month (\$990/year). Annual billing is two months free. Existing subscriptions keep the price they were sold at until their plan is changed.
+- **Recalls past the allowance are metered.** Starter includes 5,000 recalls per month and Growth 50,000; beyond that, recalls bill at **\$2 per 1,000**, on the same invoice as the plan. Free plan recall is capped and never metered.
+- **A failed renewal no longer drops the plan instantly.** The paid plan stays active for three days past the period end while the card is retried.
 
 ## 2026-10-20 — Documentation reconciliation
 
