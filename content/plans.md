@@ -45,6 +45,12 @@ Current usage is visible on the console **Dashboard** as progress bars, so you c
 2. Choose a plan and cadence (monthly or yearly).
 3. When self-service checkout is available for the account, complete payment through Stripe. The plan activates after Stripe confirmation is processed.
 
+### Renewal, failed payments, and expiry
+
+- A paid plan runs to its **period end**; SPM reads that date from Stripe and shows it on the Billing page.
+- If a renewal charge fails, the plan stays active for **3 days past the period end** while Stripe retries the card. After that window the account returns to the Free plan.
+- Accounts provisioned manually (Enterprise, no Stripe subscription) carry no period end and do not expire on their own.
+
 If the console disables self-service checkout or plan changes, no billing mutation is attempted. Contact [contact@spmos.ai](mailto:contact@spmos.ai). Enterprise terms are reviewed individually.
 
 There is no automatic overage: hitting a quota rejects the operation, it never silently converts into a charge.
