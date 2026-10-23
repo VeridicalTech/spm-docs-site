@@ -24,6 +24,7 @@ disabled checkout means no billing mutation is attempted.
 | Yearly price | — | $290 | $990 | Custom |
 | API rate limit | 10 requests/min | 30 requests/min | 100 requests/min | Reviewed before activation |
 | Memory writes / month | 500 | 3,000 | 8,000 | Reviewed before activation |
+| Included recalls / month | 1,000 | 5,000 | 50,000 | Reviewed before activation |
 | Stored memories | 1,000 | 10,000 | 50,000 | Reviewed before activation |
 | Provider channels | 1 | 3 | 10 | Reviewed before activation |
 | Support | Community | Email | Priority | Dedicated |
@@ -38,6 +39,10 @@ Monthly and yearly SKUs of the same plan unlock identical quotas. Compare the di
 - **Provider channels** — creating a channel beyond the plan allowance is rejected in the console. Revoking (deleting) a channel frees the slot; revoked channels and keys disappear from console lists entirely.
 
 Current usage is visible on the console **Dashboard** as progress bars, so you can see consumption before hitting a wall.
+
+### Recalls past the included allowance
+
+Starter and Growth include a monthly recall allowance (5,000 and 50,000). Recalls beyond it are metered at **\$2 per 1,000 recalls**, billed at the end of the billing period on the same invoice as the plan. Recall counts are per tenant per calendar day and appear on the Billing page. The Free plan has a hard cap and is never metered.
 
 ## Upgrading and billing
 
