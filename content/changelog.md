@@ -2,13 +2,18 @@
 title: Changelog
 description: Dated public changes to SPM interfaces, behavior, documentation, and supported integration boundaries.
 published: 2026-08-19
-updated: 2026-10-23
+updated: 2026-10-24
 applies_to: SPM public releases
 ---
 
 # Changelog
 
 This page records dated public changes. Historical entries describe the behavior announced at the time, not a current performance guarantee.
+
+## 2026-10-24 — Plan limits: what is metered and what is a hard cap
+
+- **Only recalls are metered.** Rate, memory-write and stored-memory limits reject the operation instead of turning into a charge; the metered line is the recall allowance described below.
+- **Manual paid grants need an expiry.** An Enterprise account can be provisioned manually. A manual Starter or Growth grant must carry an expiry date; without one the account is treated as Free, because an unbounded manual grant cannot be distinguished from a legacy pilot row.
 
 ## 2026-10-23 — Plan pricing and metered recall overage
 

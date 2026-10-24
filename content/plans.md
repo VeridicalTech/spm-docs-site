@@ -54,11 +54,12 @@ Starter and Growth include a monthly recall allowance (5,000 and 50,000). Recall
 
 - A paid plan runs to its **period end**; SPM reads that date from Stripe and shows it on the Billing page.
 - If a renewal charge fails, the plan stays active for **3 days past the period end** while Stripe retries the card. After that window the account returns to the Free plan.
-- Accounts provisioned manually (Enterprise, no Stripe subscription) carry no period end and do not expire on their own.
+- Enterprise accounts provisioned manually (no Stripe subscription) carry no period end and do not expire on their own.
+- A manual Starter or Growth grant must carry an expiry date. Without one the account is treated as Free, because an unbounded manual paid grant is indistinguishable from a legacy pilot row.
 
 If the console disables self-service checkout or plan changes, no billing mutation is attempted. Contact [contact@spmos.ai](mailto:contact@spmos.ai). Enterprise terms are reviewed individually.
 
-There is no automatic overage: hitting a quota rejects the operation, it never silently converts into a charge.
+Recalls are the only metered line. **Writes, stored memories and rate limits are hard caps**: an operation that would exceed them is rejected, never converted into a charge. Recall usage beyond the included allowance is billed as described above.
 
 ## What a "memory write" means
 
