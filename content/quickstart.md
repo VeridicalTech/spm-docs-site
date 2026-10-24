@@ -114,6 +114,17 @@ Call `status` with `{"source_ids":["docs-smoke-20261020-01"]}` and wait for that
 
 Check the returned evidence against your saved fact, then pass `evidence_refs[].read_token` verbatim as an element of `read_tokens` to `read` and check the original text. Readiness alone does not prove recall completeness. Delete the test source afterward with `delete`, using the same `source_id` and a new `idempotency_key` (requires `memory:delete`).
 
+Or run the conformance probe, which performs the same round trip plus the
+verdict checks and cleans up after itself:
+
+```bash
+export SPM_API_KEY=spm_live_...
+python3 tools/mcp/conformance.py
+```
+
+It exits non-zero if any contract check fails, so the same command works as a
+smoke test in CI.
+
 ## 4. When will I see savings?
 
 Savings can appear when eligible older exchanges are stored as sources and omitted from the forwarded prompt. Short or new conversations can correctly show no reduction. The result depends on the request and memory settings; compression and source readiness do not promise that semantic recall will recover every detail. Read original sources when exact content matters.

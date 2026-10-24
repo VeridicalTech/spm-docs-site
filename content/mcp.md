@@ -76,11 +76,48 @@ strongly the returned evidence backs the answer:
 - `support_failure_kinds` — when status is `insufficient`, machine-readable
   reasons why the candidates failed support.
 - `authority` and `reason` — provenance of the judgment.
+- `sufficiency_judged` / `sufficiency_source` — who judged. `deep_selector` means
+  a model was asked and judged the evidence sufficient; `gate_only` means
+  deterministic checks accepted it and no model was asked. `gate_only` is a
+  fact about the path, not a warning.
+- `why_no_answer` — `{code, message, action_hint}` whenever the verdict is not
+  `supported`, so a client never has to parse prose to decide what to do next.
+
+Three consistency rules hold on every response, and are worth coding against:
+
+1. `status: supported` always comes with `evidence_count > 0`.
+2. An empty result never claims success: with no evidence, `gate_reason` is not
+   `passed` and `diagnostics.stop_reason` is not `sufficient`.
+3. A non-supported verdict never reports `gate_reason: passed`; the field
+   carries the decision's own reason instead (for example
+   `no_verified_evidence`).
+
+Evidence captured from a conversation is only usable when its speaker can be
+attributed. Captures that cannot be attributed still appear in `source_ids`, but
+they cannot stand alone as support: the verdict becomes `insufficient` with
+`support_failure_kinds` containing `capture_origin_unverified`, and the answer
+text is withheld. Save the fact explicitly with `remember` to make it a
+first-class memory.
 
 `supported` is a support-gate verdict, not proof that the saved claim is true in
 the world or that every premise in a compound task is covered. Check all needed
 premises and verify facts that may have changed. `insufficient` means support was
 not established — rephrase, raise `top_k`, or switch to `deep` when appropriate.
+
+### Verify the contract with your own key
+
+The rules above are executable. This probe writes one canary memory in an
+isolated partition, exercises the whole tool surface, checks the verdict rules,
+and deletes the canary:
+
+```bash
+export SPM_API_KEY=spm_live_...
+python3 tools/mcp/conformance.py           # human scorecard
+python3 tools/mcp/conformance.py --json    # CI output; exits 1 on a break
+```
+
+Contract checks must pass; capability observations (how a paraphrased question
+fares, for example) are reported separately and never fail the run.
 
 ## How agents are asked to use memory
 

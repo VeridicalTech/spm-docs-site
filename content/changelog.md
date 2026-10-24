@@ -10,6 +10,25 @@ applies_to: SPM public releases
 
 This page records dated public changes. Historical entries describe the behavior announced at the time, not a current performance guarantee.
 
+## 2026-10-24 — Recall verdicts are internally consistent, and executable
+
+- An empty recall can no longer report `gate_reason: passed` or
+  `diagnostics.stop_reason: sufficient`, and a non-supported verdict never
+  reports a passed gate. The three rules are documented in
+  [Evidence decisions](mcp.html#evidence-decisions).
+- `evidence_decision.sufficiency_source` names who judged: `deep_selector` (a
+  model judged the evidence sufficient) or `gate_only` (deterministic checks
+  accepted it). `sufficiency_judged: false` therefore no longer means
+  "unverified" on fast recall.
+- Conversation captures whose speaker cannot be attributed no longer stand
+  alone as support: the verdict is `insufficient` with
+  `capture_origin_unverified`, and the answer is withheld while the sources stay
+  visible.
+- Fast recall now reports the same cost fields as deep recall (`rounds_used`,
+  provider token and latency counters).
+- New conformance probe (`tools/mcp/conformance.py`) verifies the whole contract
+  against your own key and exits non-zero on a regression.
+
 ## 2026-10-24 — Plan limits: what is metered and what is a hard cap
 
 - **Only recalls are metered.** Rate, memory-write and stored-memory limits reject the operation instead of turning into a charge; the metered line is the recall allowance described below.
