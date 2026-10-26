@@ -10,22 +10,6 @@ applies_to: SPM public releases
 
 This page records dated public changes. Historical entries describe the behavior announced at the time, not a current performance guarantee.
 
-## 2026-10-26 — Data residency stated, audit export made windowed
-
-- New [Data residency and subprocessors](data-residency.html) page: the hosts
-  that store memory, every party that can see customer content (embeddings are
-  self-hosted; deep recall sends shortlisted passages to a model provider;
-  fast recall sends nothing), retention and deletion semantics, and the three
-  things this deployment cannot promise yet - regional pinning, SSO/SCIM, and a
-  SOC 2 report.
-- `GET /v2/audit` now accepts `since_unix`, `until_unix` and a `before_event_id`
-  keyset cursor, so an export reads one index range per page instead of
-  re-scanning history for every page. The reference exporter writes NDJSON plus
-  a SHA-256 manifest a reviewer can verify.
-- A derived preference profile can no longer answer an unrelated question: the
-  profile is only used when the question shares a content term with the
-  preferences it is about to summarise.
-
 ## 2026-10-24 — Recall verdicts are internally consistent, and executable
 
 - An empty recall can no longer report `gate_reason: passed` or
