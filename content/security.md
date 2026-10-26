@@ -46,6 +46,10 @@ Targeted deletion and clear-memory operations advance or enforce memory fences, 
 
 Deletion does not mean that pre-existing backups, write-ahead logs, replicas, provider records, or customer-side copies disappear before their documented retention or rotation periods. Review the [Privacy Policy](privacy.html), [Terms of Service](terms.html), and [Memory, evidence & deletion](memory.html) for the applicable boundary.
 
+## Where data lives and who processes it
+
+[Data residency and subprocessors](data-residency.html) lists the hosts that store memory, every party that can see customer content and under which switch, how deletion and retention work, and what an export can prove today.
+
 ## Report a security issue
 
 Do not include secrets, personal data, or exploit details in a public channel. Send a concise report to [contact@spmos.ai](mailto:contact@spmos.ai) with the affected surface, reproducible impact, and a safe way to coordinate further evidence.

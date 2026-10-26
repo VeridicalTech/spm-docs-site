@@ -68,6 +68,7 @@ PAGES = [
     ("integrations", "", "Choose an integration"),
     ("official-definitions", "", "Official definitions"),
     ("security", "", "Security"),
+    ("data-residency", "", "Data residency & subprocessors"),
     ("compare", "", "Compare"),
     ("roadmap", "", "Roadmap"),
     ("technical-report", "", "Technical report"),
