@@ -2,13 +2,22 @@
 title: Changelog
 description: Dated public changes to SPM interfaces, behavior, documentation, and supported integration boundaries.
 published: 2026-08-19
-updated: 2026-10-24
+updated: 2026-10-26
 applies_to: SPM public releases
 ---
 
 # Changelog
 
 This page records dated public changes. Historical entries describe the behavior announced at the time, not a current performance guarantee.
+
+## 2026-10-26 — Scoped audit review
+
+- Audit reads support timestamp bounds and an event-ID cursor for pagination;
+  existing limit/offset callers remain supported.
+- [Audit evidence for your review](security.html#audit-evidence-for-your-review)
+  explains how to request an authorized export and what its checksum does and
+  does not establish. No infrastructure, residency or certification commitment
+  is introduced by this update.
 
 ## 2026-10-24 — Recall verdicts are internally consistent, and executable
 

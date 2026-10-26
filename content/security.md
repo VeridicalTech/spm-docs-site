@@ -2,7 +2,7 @@
 title: Security
 description: Security boundaries for SPM as implemented by SPM-Polaris, including tenant isolation, credential custody, memory admission, provider forwarding, deletion evidence, and shared responsibilities.
 published: 2026-08-22
-updated: 2026-08-23
+updated: 2026-10-26
 applies_to: SPM-Polaris
 ---
 
@@ -45,6 +45,21 @@ Recall combines lexical and vector candidates, applies stored trust, favors sour
 Targeted deletion and clear-memory operations advance or enforce memory fences, purge eligible authoritative and derived state, and return verifiable operation evidence. A purge tombstone prevents the same source identity from being re-enqueued in the same memory generation.
 
 Deletion does not mean that pre-existing backups, write-ahead logs, replicas, provider records, or customer-side copies disappear before their documented retention or rotation periods. Review the [Privacy Policy](privacy.html), [Terms of Service](terms.html), and [Memory, evidence & deletion](memory.html) for the applicable boundary.
+
+## Audit evidence for your review
+
+Use the console's audit view to inspect activity available to your authorized
+account. For a scoped export, contact [contact@spmos.ai](mailto:contact@spmos.ai)
+with the requested time window and event types. Do not send passwords, API keys
+or provider credentials in the request. An export is an authorization-checked
+request, not access to another account's records.
+
+The audit service supports timestamp bounds and an event-ID cursor for paged
+reads. Operator tooling can produce an audit-event file and a checksum manifest.
+A checksum can check that a file matches its manifest; it is not a server
+signature, independent proof of completeness, or a certification. Audit exports
+are not backups of all memory content. Availability, retention and the approved
+delivery method must be confirmed for the requested account and period.
 
 ## Report a security issue
 
