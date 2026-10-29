@@ -2,13 +2,26 @@
 title: Changelog
 description: Dated public changes to SPM interfaces, behavior, documentation, and supported integration boundaries.
 published: 2026-08-19
-updated: 2026-10-26
+updated: 2026-10-30
 applies_to: SPM public releases
 ---
 
 # Changelog
 
 This page records dated public changes. Historical entries describe the behavior announced at the time, not a current performance guarantee.
+
+## 2026-10-30 — Long-context safety and reversible fold economics
+
+- Eligible long histories can use deterministic reversible fold summaries with
+  a reference to the removed range. Fold economics record removed tokens,
+  summary overhead, net saving, and references without changing billing or
+  provider protocol fields.
+- Responses requests with `previous_response_id`, reasoning blocks, and tool
+  state remain protected. Recall may still be injected at the safe tail, while
+  `bypassed_protected_context` explains why the full history was preserved.
+- Public guides now document the distinction between recall and compression,
+  the protected-state test path, and the machine-readable recall verdict
+  contract.
 
 ## 2026-10-26 — Scoped audit review
 

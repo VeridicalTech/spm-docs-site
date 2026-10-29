@@ -21,6 +21,18 @@ What that means for you:
 - **Your memory evolves with you.** When something changes — a preference, a configuration, a decision — SPM records the current state and keeps the earlier state as history, instead of silently overwriting it.
 - **You can delete, verifiably.** Remove one memory, all of it, or your whole account, with a signed record of what was removed.
 
+## Current production behavior
+
+The hosted gateway combines evidence-gated recall, automatic capture,
+deterministic history compression, reversible fold summaries for eligible long
+histories, receipts, and tenant-scoped deletion. These decisions are
+independent: recall can work while compression is safely bypassed.
+
+SPM never edits provider-managed reasoning or tool state merely to save tokens.
+Responses requests with `previous_response_id`, and histories containing
+protected reasoning/tool state, may be forwarded in full. The response exposes
+why through `x-spm-continuity-state` and the hosted receipt.
+
 The memory service is hosted. You choose where your provider credential lives:
 
 | Path | Provider credential | Model traffic | Memory traffic |
@@ -57,5 +69,6 @@ Hosted interfaces accept an `spm_live_...` key. Local Proxy gives your harness a
 - [Local Proxy](local-proxy.html) — install `@spmos/local-proxy`
 - [MCP server](mcp.html) — `remember`, `recall`, `read`, `delete`, `status`
 - [Provider Proxy API](proxy-api.html) — modes, receipts, and errors
+- [Proxy behavior & safety](proxy-behavior.html) — when memory, compression, and fold apply
 - [Best practices](best-practices.html) — reliable memory patterns and multi-user guidance
 - [Benchmarks](benchmarks.html) — measured results and their limits

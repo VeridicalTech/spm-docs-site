@@ -56,6 +56,13 @@ Three depths are available; `auto` is the default and the right choice for almos
 
 Set your account's default depth in **Settings → Memory** — every recall that does not name a depth uses it. The same tab controls whether your proxy conversations are saved at all (your messages and assistant replies can each be turned off).
 
+### Verdicts are data
+
+Do not decide that a recall is usable from prose alone. Check
+`evidence_decision.status` and `why_no_answer`; see [Recall verdicts](verdicts.html)
+for the machine-readable contract. A supported answer can come from deterministic
+`gate_only` checks; that is different from a deep selector judging sufficiency.
+
 ## Reading the exact original text
 
 Recall results include short-lived read tokens and source IDs. Your agent can pass returned values as `read_tokens[]` or `source_ids[]` to `read` to fetch the saved span or backing source — useful when it needs original wording or more than one premise. Both paths enforce the current account, memory generation, partition, and access checks; a source ID does not bypass them.

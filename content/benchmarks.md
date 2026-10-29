@@ -51,6 +51,14 @@ Reduction needs both: a history long enough to matter, and older exchanges whose
 
 A 0% reduction is a common and correct result for real agentic and chat traffic: only long, eligible, already-memorized histories reduce at all. The 66,265-token example above is one extreme eligible request, not a user-facing average saving rate, and must not be read as one.
 
+### Protected-state caveat
+
+Responses requests with `previous_response_id` and histories with reasoning or
+tool state are preserved in full. A request can therefore show a large original
+token count, a small recalled-memory addition, and 0% history reduction while
+still using SPM recall correctly. Savings measurements must report request shape
+and continuity state, not just token totals.
+
 ## Historical recall accuracy (LoCoMo-Refined)
 
 Measured on the public LoCoMo-Refined long-conversation memory benchmark: 1,310 scored questions, one historical frozen production-near run. This is not a current production-quality claim or an AML II score.

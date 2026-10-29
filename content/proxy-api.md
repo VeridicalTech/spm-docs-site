@@ -107,6 +107,24 @@ Successful hosted requests carry `x-spm-*` headers with the request/receipt ID a
 
 A bypass means a particular compression check prevented removal; it is not proof that no other eligible transformation occurred. Source readiness does not prove that every fact will appear in a later recall. Tool-result capture is eligible for trimming, and raw JSON restoration is not a shipped guarantee. Keep original artifacts when exact reproduction matters.
 
+## Protected history and fold behavior
+
+Ordinary chat/history exchanges may be compressed after source-bound memory
+coverage is proven. When the removable range is large enough, it may be
+represented by a deterministic fold summary and a reversible reference.
+
+Provider-managed Responses state (`previous_response_id`), reasoning blocks,
+tool-call/tool-result pairs, and other opaque provider state are preserved. SPM
+can still recall memory, but it does not fold or delete that protected state.
+For a result such as `408462 → 408541`, the original history was preserved and
+a small recalled-memory block was appended; `bypassed_protected_context` is the
+honest outcome.
+
+When a fold is applied, assembly economics record the fold count, reversible
+reference, removed-token mass, summary overhead, and net saving. These values
+are observability data; they do not change provider billing or compression-mode
+fields.
+
 ## Memory lookups on the proxy path
 
 Memory reads use the fast path by default, with bounded work rather than selector model rounds on the request path. Lookup latency can still affect time-to-first-token. A failed lookup can continue without injected context, with a degraded memory state. Compression separately checks source readiness; lookup failure does not by itself guarantee that the original history is forwarded unchanged.

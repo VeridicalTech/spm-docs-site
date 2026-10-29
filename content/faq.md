@@ -82,3 +82,14 @@ Local Proxy exposes per-request `x-spm-*` headers. It does not create hosted rec
 
 **Why did my request go through unchanged?**  
 A compression check may have prevented removal, or the request may have had nothing eligible to shorten. Inspect its memory, compression, and continuity state. Source readiness is checked separately from recall: a failed lookup does not guarantee unchanged history, and readiness does not prove complete recall coverage. Eligible tool-output shortening may also occur independently.
+
+**Why did a very large Responses request add only a few memory tokens?**
+
+If the request contains `previous_response_id`, reasoning items, or protected tool state, SPM preserves provider-managed history and only injects recall at the safe tail. The receipt will show `bypassed_protected_context`; this is expected.
+
+**How do I test compression and fold?**
+
+Use an ordinary multi-turn chat/history request whose older exchanges have
+already become searchable memory. Do not use `previous_response_id` for the
+compression test. Verify a lower forwarded count and `committed` continuity;
+test provider-managed Responses separately and expect the protected bypass.

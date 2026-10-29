@@ -46,6 +46,21 @@ Eligible user messages, visible assistant replies, and supported tool-result tex
 
 When a conversation is long, SPM can shorten eligible older history after checking source readiness and protected context. Recent context and protocol-sensitive content are guarded against unsafe trimming. These checks do not prove semantic losslessness: saved evidence and a shorter request are not equivalent to keeping every original detail in context. If trimming is not eligible, SPM can forward full history instead; forwarding still depends on normal request validation and provider limits.
 
+### Provider-managed Responses state
+
+An OpenAI Responses request with `previous_response_id` points to history held
+by the provider. SPM can see only the new tail, so it does not rewrite or fold
+that provider-managed history. It may still recall relevant SPM memory and add
+it to the tail. This produces `bypassed_protected_context`, not a compression
+failure.
+
+For ordinary history, SPM protects recent messages and opaque tool/reasoning
+state, and removes only older exchanges whose content is safely stored. When
+the removed range is large enough, the gateway may replace it with a
+deterministic summary plus a reversible reference. Session economics records
+removed tokens, summary overhead, net saving, and references without changing
+billing or provider protocol fields.
+
 ## Deletion boundary
 
 Deleting removes memory from active storage and verifies it is gone. **Clear memory** gives your account a clean slate; **Close account** also revokes credentials. A deleted source ID cannot be reused until the next clean slate, which prevents deleted content from reappearing. Backups created before a deletion age out on their normal retention schedule.
