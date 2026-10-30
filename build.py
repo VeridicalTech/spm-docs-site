@@ -10,6 +10,7 @@ into the flat dist/assets path used by the shared page template.
 
 from __future__ import annotations
 
+import hashlib
 import html
 import json
 import re
@@ -115,6 +116,19 @@ def parse_source(md_file: Path) -> tuple[dict[str, str], str]:
 
 def canonical_url(slug: str) -> str:
     return f"{SITE_URL}/" if slug == "index" else f"{SITE_URL}/{slug}"
+
+
+def asset_href(name: str) -> str:
+    """Return a content-addressed asset URL.
+
+    HTML and CSS are cached independently by the CDN and by browsers, so a
+    stylesheet from the previous release can pair with fresh HTML. That pairing
+    renders CSS-hidden affordances (the skip link) as visible page text. A
+    content hash in the query string makes each release fetch its own assets
+    while old pages keep the assets they were built with.
+    """
+    digest = hashlib.sha256((ROOT / "assets" / name).read_bytes()).hexdigest()[:12]
+    return f"/assets/{name}?v={digest}"
 
 
 def plain_text(fragment: str) -> str:
@@ -248,7 +262,9 @@ def render_page(slug: str, metadata: dict[str, str], body_html: str, *, toc_toke
     )
     body_html = body_html.replace("</h1>", f"</h1>{page_meta}", 1)
     return (
-        TEMPLATE.replace("{{TITLE}}", html.escape(title))
+        TEMPLATE.replace("{{CSS_HREF}}", html.escape(asset_href("site.css"), quote=True))
+        .replace("{{JS_HREF}}", html.escape(asset_href("site.js"), quote=True))
+        .replace("{{TITLE}}", html.escape(title))
         .replace("{{DESCRIPTION}}", html.escape(description, quote=True))
         .replace("{{CANONICAL_URL}}", html.escape(url, quote=True))
         .replace("{{OG_TYPE}}", page_type)
@@ -344,7 +360,12 @@ def main() -> None:
         )
         pages.append((slug, metadata))
         print(f"  {slug}.html")
-    (DIST / "404.html").write_text(NOT_FOUND_TEMPLATE, encoding="utf-8")
+    (DIST / "404.html").write_text(
+        NOT_FOUND_TEMPLATE.replace("{{CSS_HREF}}", html.escape(asset_href("site.css"), quote=True)).replace(
+            "{{JS_HREF}}", html.escape(asset_href("site.js"), quote=True)
+        ),
+        encoding="utf-8",
+    )
     write_machine_files(pages)
     print(f"Built {len(pages)} pages and machine files -> {DIST}")
 

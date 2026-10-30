@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sys
@@ -178,6 +179,10 @@ def main() -> None:
         require(entity in llms, f"llms.txt missing {entity}")
 
     not_found = (DIST / "404.html").read_text(encoding="utf-8")
+    require(
+        re.search(r"\{\{[A-Z][A-Z0-9_]*\}\}", not_found) is None,
+        "404.html: unresolved template token",
+    )
     require('content="noindex, follow"' in not_found, "404.html must be noindex")
     require("Page not found" in not_found, "404.html content missing")
     require('src="/assets/orbit-lockup-186.webp"' in not_found, "404 optimized lockup missing")
@@ -217,6 +222,26 @@ def main() -> None:
     for removed in ("security", "compare", "roadmap", "official-definitions", "technical-report"):
         require(removed not in slugs, f"removed page still present in inventory: {removed}")
     require('main id="main-content" class="content" tabindex="-1"' in sidebar_sample, "skip target missing")
+
+    # Assets are content-addressed so HTML and CSS cannot desynchronise across
+    # a release. A stale stylesheet renders the hidden skip link as page text.
+    dist_css = (DIST / "assets" / "site.css").read_text(encoding="utf-8")
+    dist_js = (DIST / "assets" / "site.js").read_text(encoding="utf-8")
+    css_hash = hashlib.sha256(dist_css.encode("utf-8")).hexdigest()[:12]
+    js_hash = hashlib.sha256(dist_js.encode("utf-8")).hexdigest()[:12]
+    require(
+        f'href="/assets/site.css?v={css_hash}"' in sidebar_sample,
+        "stylesheet is not content-addressed",
+    )
+    require(
+        f'src="/assets/site.js?v={js_hash}"' in sidebar_sample,
+        "script is not content-addressed",
+    )
+    require(
+        re.search(r"\.skip-link \{[^}]*transform: translateY\(-180%\)", dist_css) is not None,
+        "skip link is not hidden at rest",
+    )
+    require(".skip-link:focus-visible" in dist_css, "skip link does not reveal on keyboard focus")
 
     print(f"PASS {len(slugs)} pages, {len(canonicals)} canonicals, and 4 machine/error files verified")
 

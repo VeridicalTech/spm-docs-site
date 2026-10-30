@@ -476,7 +476,9 @@ blockquote {
   }
   .nav-disclosure-summary { display: flex; }
   .content { padding: 28px 24px 64px; }
-  .topnav { display: none; }
+  /* Keep the route back to the marketing site; the internal duplicates are
+     already listed in the documentation disclosure. */
+  .topnav a:not([href^="http"]) { display: none; }
   .topbar { padding: 0 16px; }
   .nav-link { min-height: 44px; padding: 10px 12px; }
   .brand-lockup { height: 38px; }
