@@ -68,6 +68,7 @@ PAGES = [
     # intentionally hidden from the public sidebar to match the latest Wrangler
     # production information architecture. Do not delete these pages silently.
     ("integrations", "", "Choose an integration"),
+    ("python-sdk", "", "Python SDK"),
     ("official-definitions", "", "Official definitions"),
     ("security", "", "Security"),
     ("compare", "", "Compare"),

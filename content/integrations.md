@@ -43,6 +43,17 @@ Choose this path when your application should own inference and call memory expl
 
 SPM sees only the content submitted through those memory operations. Inference receipts and provider accounting stay in your application or provider account. See [MCP server](mcp.html).
 
+## Python SDK and drop-in clients
+
+The official pre-release Python client is published as source at
+[github.com/VeridicalTech/spm-client](https://github.com/VeridicalTech/spm-client).
+It provides typed memory/evidence/receipt APIs plus tested OpenAI and Anthropic
+drop-in helpers. See the [Python SDK guide](python-sdk.html).
+
+The public repository uses Veridical Tech's proprietary license. PyPI publishing
+is pending legal release approval, so do not document `pip install spm-client`
+as a public install path yet.
+
 ## Make the decision from the boundary
 
 Use the path that matches your requirements for credential custody, model-traffic routing, data processing, observability, and runtime ownership. Keeping a provider credential local does not by itself make the whole system local; using a managed proxy does not remove the need to review the provider and content-processing boundary.
