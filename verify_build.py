@@ -76,13 +76,6 @@ def main() -> None:
             'href="/assets/orbit-favicon-64.webp"' in document,
             f"{output.name}: optimized favicon missing",
         )
-        if slug == "technical-report":
-            require(
-                'content="https://docs.spmos.ai/assets/spmos-technical-report-social.png"'
-                in document,
-                "technical-report.html: dedicated social card missing",
-            )
-
         scripts = re.findall(
             r'<script\s+type="application/ld\+json">(.*?)</script>',
             document,
@@ -101,9 +94,6 @@ def main() -> None:
             any(schema in serialized for schema in ("TechArticle", "WebPage", "FAQPage")),
             f"{output.name}: supported page schema missing",
         )
-        if slug == "official-definitions":
-            require("DefinedTermSet" in serialized, "official-definitions.html: DefinedTermSet missing")
-            require("FAQPage" not in serialized, "official-definitions.html: FAQPage must belong to FAQ")
         if slug == "faq":
             faq_pages = []
             for item in parsed:
@@ -197,14 +187,36 @@ def main() -> None:
     for entity in ("SPM", "SPMOS.ai", "SPM-Polaris", "StellarPath Memory Operating System"):
         require(entity in home, f"index.html missing {entity}")
 
-    security = (DIST / "security.html").read_text(encoding="utf-8")
-    require("SPM applies security controls" in security, "security.html: SPM security subject missing")
-    require("SPM-Polaris release" in security, "security.html: implementation scope missing")
-
     sidebar_sample = (DIST / "index.html").read_text(encoding="utf-8")
     require('<p class="nav-section">Legal</p>' in sidebar_sample, "Legal sidebar section missing")
     require('href="/privacy"' in sidebar_sample, "Privacy footer link missing")
     require('href="/terms"' in sidebar_sample, "Terms footer link missing")
+
+    # Every published page must be reachable from the sidebar, and no internal
+    # link may point at a page that does not exist (including pages we removed).
+    sidebar_block = re.search(
+        r'<details class="nav-disclosure".*?</details>', sidebar_sample, re.DOTALL
+    )
+    require(sidebar_block is not None, "sidebar disclosure missing")
+    sidebar_hrefs = {
+        "index" if path == "" else path
+        for path in re.findall(
+            r'<a class="nav-link[^"]*" href="/([a-z0-9-]*)"', sidebar_block.group(0)
+        )
+    }
+    require(
+        sidebar_hrefs == set(slugs),
+        f"sidebar does not list every page: {sorted(sidebar_hrefs ^ set(slugs))}",
+    )
+    for output in DIST.glob("*.html"):
+        document = output.read_text(encoding="utf-8")
+        for target in re.findall(r'href="/([a-z0-9-]+)(?:#[^"]*)?"', document):
+            if target == "assets":
+                continue
+            require(target in slugs, f"{output.name}: link to missing page /{target}")
+    for removed in ("security", "compare", "roadmap", "official-definitions", "technical-report"):
+        require(removed not in slugs, f"removed page still present in inventory: {removed}")
+    require('main id="main-content" class="content" tabindex="-1"' in sidebar_sample, "skip target missing")
 
     print(f"PASS {len(slugs)} pages, {len(canonicals)} canonicals, and 4 machine/error files verified")
 

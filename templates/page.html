@@ -24,12 +24,13 @@
   <link rel="stylesheet" href="/assets/site.css" />
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <header class="topbar">
     <a class="brand" href="/">
       <img src="/assets/orbit-lockup-186.webp" alt="SPM — StellarPath Memory Operating System" class="brand-lockup" width="93" height="44" decoding="async" fetchpriority="low" />
       <span class="brand-tag">Docs</span>
     </a>
-    <nav class="topnav">
+    <nav class="topnav" aria-label="Primary navigation">
       <a href="https://spmos.ai">Back to Home</a>
       <a href="/mcp">MCP</a>
       <a href="/quickstart">Quickstart</a>
@@ -39,10 +40,15 @@
   </header>
   <div class="shell">
     <aside class="sidebar">
-      {{NAV}}
+      <details class="nav-disclosure" open>
+        <summary class="nav-disclosure-summary">Documentation</summary>
+        <nav aria-label="Documentation sections">
+          {{NAV}}
+        </nav>
+      </details>
     </aside>
     {{PAGE_TOC}}
-    <main class="content">
+    <main id="main-content" class="content" tabindex="-1">
       {{BREADCRUMB}}
       {{CONTENT}}
       <footer class="page-footer">

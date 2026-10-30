@@ -10,19 +10,21 @@
   <link rel="stylesheet" href="/assets/site.css" />
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <header class="topbar">
     <a class="brand" href="/">
       <img src="/assets/orbit-lockup-186.webp" alt="SPM — StellarPath Memory Operating System" class="brand-lockup" width="93" height="44" decoding="async" fetchpriority="low" />
       <span class="brand-tag">Docs</span>
     </a>
-    <nav class="topnav">
+    <nav class="topnav" aria-label="Primary navigation">
       <a href="https://spmos.ai">Back to Home</a>
       <a href="/mcp">MCP</a>
       <a href="/quickstart">Quickstart</a>
+      <a href="/proxy-api">API</a>
       <a href="/benchmarks">Benchmarks</a>
     </nav>
   </header>
-  <main class="content reveal" style="margin: 0 auto; padding-top: 96px;">
+  <main id="main-content" class="content error-page" tabindex="-1">
     <p class="nav-section">HTTP 404</p>
     <h1>Page not found</h1>
     <p>The requested documentation page does not exist or has moved.</p>

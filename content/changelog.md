@@ -10,6 +10,16 @@ applies_to: SPM public releases
 
 This page records dated public changes. Historical entries describe the behavior announced at the time, not a current performance guarantee.
 
+## 2026-10-30 — Documentation navigation and readability
+
+- Every remaining page is reachable from the sidebar. Integration selection and
+  the Python SDK guide are now listed under Start and Guides.
+- Retired five reference pages: Compare, Security, Roadmap, Official
+  definitions, and Technical report. Their earlier URLs no longer resolve.
+- Added a skip link, visible keyboard focus, larger navigation targets,
+  anchored-heading offsets, and copy buttons that keep keyboard focus and
+  announce success or failure.
+
 ## 2026-10-30 — Long-context safety and reversible fold economics
 
 - Eligible long histories can use deterministic reversible fold summaries with
@@ -27,10 +37,9 @@ This page records dated public changes. Historical entries describe the behavior
 
 - Audit reads support timestamp bounds and an event-ID cursor for pagination;
   existing limit/offset callers remain supported.
-- [Audit evidence for your review](security.html#audit-evidence-for-your-review)
-  explains how to request an authorized export and what its checksum does and
-  does not establish. No infrastructure, residency or certification commitment
-  is introduced by this update.
+- Requesting an authorized audit export requires account-owner authorization.
+  The export checksum establishes transport integrity only, not an
+  infrastructure, residency or certification commitment.
 
 ## 2026-10-24 — Recall verdicts are internally consistent, and executable
 

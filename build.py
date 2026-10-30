@@ -42,16 +42,18 @@ SOCIAL_IMAGE = "https://docs.spmos.ai/assets/orbit-light-transparent.png"
 # checkout next to it.
 WEB_PUBLIC = ROOT / "assets" / "logo"
 
-# Page inventory and sidebar order. An empty section keeps the page public while
-# leaving navigation to the global footer.
+# Page inventory and sidebar order. Every published page is navigable: a page
+# that a reader can reach but cannot find again is a documentation dead end.
 # (slug, section, title)
 PAGES = [
     ("index", "Start", "Overview"),
     ("quickstart", "Start", "Quickstart"),
+    ("integrations", "Start", "Choose an integration"),
     ("authentication", "Start", "Authentication & API keys"),
     ("plans", "Start", "Plans & quotas"),
     ("memory", "Guides", "Your memory"),
     ("mcp", "Guides", "MCP server"),
+    ("python-sdk", "Guides", "Python SDK"),
     ("verdicts", "Guides", "Recall verdicts"),
     ("providers", "Guides", "Bring your own provider"),
     ("local-proxy", "Guides", "Local Proxy"),
@@ -64,16 +66,6 @@ PAGES = [
     ("changelog", "Reference", "Changelog"),
     ("privacy", "Legal", "Privacy Policy"),
     ("terms", "Legal", "Terms of Service"),
-    # Retained in the repository for direct links and historical references, but
-    # intentionally hidden from the public sidebar to match the latest Wrangler
-    # production information architecture. Do not delete these pages silently.
-    ("integrations", "", "Choose an integration"),
-    ("python-sdk", "", "Python SDK"),
-    ("official-definitions", "", "Official definitions"),
-    ("security", "", "Security"),
-    ("compare", "", "Compare"),
-    ("roadmap", "", "Roadmap"),
-    ("technical-report", "", "Technical report"),
 ]
 
 MD_EXTENSIONS = ["fenced_code", "tables", "toc", "attr_list", "sane_lists"]
@@ -200,17 +192,23 @@ def structured_data(slug: str, metadata: dict[str, str], body_html: str) -> str:
 
 
 def render_page(slug: str, metadata: dict[str, str], body_html: str, *, toc_tokens: list | None = None) -> str:
-    sections: dict[str, list[tuple[str, str, str]]] = {}
+    sections: dict[str, list[tuple[str, str]]] = {}
     for s, section, t in PAGES:
-        if not section:
-            continue
-        sections.setdefault(section, []).append((s, t, "active" if s == slug else ""))
-    nav = []
+        sections.setdefault(section, []).append((s, t))
+    nav: list[str] = []
     for section, items in sections.items():
         nav.append(f'<p class="nav-section">{html.escape(section)}</p>')
-        for s, t, active in items:
+        nav.append('<ul class="nav-list">')
+        for s, t in items:
             href = "/" if s == "index" else f"/{s}"
-            nav.append(f'<a class="nav-link {active}" href="{href}">{html.escape(t)}</a>')
+            if s == slug:
+                nav.append(
+                    f'<li><a class="nav-link active" href="{href}" aria-current="page">'
+                    f"{html.escape(t)}</a></li>"
+                )
+            else:
+                nav.append(f'<li><a class="nav-link" href="{href}">{html.escape(t)}</a></li>')
+        nav.append("</ul>")
     title = metadata["title"]
     description = metadata["description"]
     url = canonical_url(slug)
@@ -326,9 +324,6 @@ def main() -> None:
         "orbit-light-transparent.png",
     ):
         shutil.copy(WEB_PUBLIC / name, DIST / "assets" / name)
-    for name in ("spmos-technical-report-social.png",):
-        shutil.copy(ROOT / "assets" / "social" / name, DIST / "assets" / name)
-
     expected_slugs = [slug for slug, _, _ in PAGES]
     actual_slugs = sorted(path.stem for path in CONTENT.glob("*.md"))
     if sorted(expected_slugs) != actual_slugs:
