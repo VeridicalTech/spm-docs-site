@@ -46,6 +46,20 @@ Targeted deletion and clear-memory operations advance or enforce memory fences, 
 
 Deletion does not mean that pre-existing backups, write-ahead logs, replicas, provider records, or customer-side copies disappear before their documented retention or rotation periods. Review the [Privacy Policy](privacy.html), [Terms of Service](terms.html), and [Memory, evidence & deletion](memory.html) for the applicable boundary.
 
+## Enterprise readiness boundary
+
+Implemented controls include tenant/namespace/partition fences, scoped roles,
+signed evidence and purge receipts, verified active-data deletion, audit query
+and export, usage/limits APIs, and a service-chain DR manifest.
+
+Current boundaries are explicit: SPM supports Supabase session authentication
+with `tenant_user`, `tenant_admin`, and `platform_admin` roles. SAML/OIDC
+federation, SCIM, custom organization roles, China data residency, multi-region
+failover, SOC 2/ISO certification, and lossless migration import are not claimed
+by this release. No numeric uptime, latency, throughput, RTO, or RPO SLA is
+promised here. Data residency, subprocessors, retention, deletion certificates,
+and provider training/retention controls must be agreed per deployment and DPA.
+
 ## Report a security issue
 
 Do not include secrets, personal data, or exploit details in a public channel. Send a concise report to [contact@spmos.ai](mailto:contact@spmos.ai) with the affected surface, reproducible impact, and a safe way to coordinate further evidence.

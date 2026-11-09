@@ -1,6 +1,6 @@
 ---
 title: MCP server
-description: Connect an MCP client to SPM memory tools for governed remember, recall, read, delete, and status operations.
+description: Connect an MCP client to SPM memory tools for governed remember, recall, read, delete, status, and compatibility alias operations.
 published: 2026-08-19
 updated: 2026-10-20
 applies_to: SPM-Polaris
@@ -8,14 +8,14 @@ applies_to: SPM-Polaris
 
 # MCP server
 
-MCP gives a compatible agent five explicit tools to save, find, read, and delete your SPM memory — without changing how the agent talks to its model.
+MCP gives a compatible agent eight default tools to save, find, read, and delete your SPM memory — without changing how the agent talks to its model.
 
 ```text
 https://api.spmos.ai/mcp
 Authorization: Bearer spm_live_...
 ```
 
-The production server name is **SPM**. The five primary tools are `remember`, `recall`, `read`, `delete`, and `status`. Compatibility aliases `add_memory`, `search_memory`, and `delete_memory` have the same schemas and behavior as `remember`, `recall`, and `delete`, respectively.
+The production server name is **SPM**. The default catalog contains `remember`, `recall`, `read`, `delete`, `status`, and the compatibility aliases `add_memory`, `search_memory`, and `delete_memory`. The aliases have the same schemas and behavior as `remember`, `recall`, and `delete`, respectively. The optional `recall_selector_round0_pair` tool is not part of the default production catalog; it is enabled only for an allowlisted evaluation configuration.
 
 ## Tools
 
@@ -26,6 +26,9 @@ The production server name is **SPM**. The five primary tools are `remember`, `r
 | `recall` | Answers a question with the strongest saved evidence | `question` (one intent, fully qualified — see [Best practices](best-practices.html#3-ask-focused-recall-questions)), optional `top_k` (default 20; raise it for broader evidence coverage), optional `depth`, `lane_policy`, and `user_partition` |
 | `read` | Fetches a selected span or backing source | `read_tokens[]`, `source_ids[]`, or both; optional `user_partition` |
 | `delete` | Removes one memory and everything derived from it | `source_id`, `idempotency_key` |
+| `add_memory` | Alias of `remember` | Same schema and behavior as `remember` |
+| `search_memory` | Alias of `recall` | Same schema and behavior as `recall` |
+| `delete_memory` | Alias of `delete` | Same schema and behavior as `delete` |
 
 Scopes: `remember` requires `memory:write`; `recall`, `read`, and `status` require `memory:read`; `delete` requires `memory:delete`. Selecting a non-empty `user_partition` additionally requires `memory:partition`.
 
