@@ -95,7 +95,7 @@ Automatic capture is best-effort, not a guaranteed durable retry queue. Keep ori
 | `POST /v1/chat/completions` | OpenAI-compatible upstream |
 | `POST /v1/responses` | OpenAI-compatible upstream |
 | `POST /v1/messages` | Anthropic Messages upstream |
-| `GET /v1/models` | Direct upstream relay when the provider exposes it |
+| `GET /v1/models` | Upstream discovery for the configured OpenAI-compatible channel |
 | `GET /health` / `GET /livez` | Local process checks |
 
 JSON and SSE are supported; zstd request bodies used by Codex are decoded.
@@ -120,7 +120,7 @@ Local Proxy requests do **not** create hosted receipts, so they do not appear in
 ## Troubleshooting
 
 - `spm doctor` validates local configuration; it does not prove key scopes or complete a live provider request.
-- `GET /v1/models` fails when the upstream does not expose that route.
+- `GET /v1/models` fails when the configured provider channel or its upstream does not support model discovery. Hosted Proxy applies the channel's model configuration; check the Hosted [Provider proxy API](proxy-api.html) for that contract.
 - No reduction on a short or new conversation is expected — there was nothing safe to remove.
 - One config/process selects one upstream transport, not one model. Multiple providers need separate config homes and ports.
 - The foreground process stops with `Ctrl+C`; this release has no daemon manager.

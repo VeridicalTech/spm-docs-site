@@ -2,13 +2,23 @@
 title: Changelog
 description: Dated public changes to SPM interfaces, behavior, documentation, and supported integration boundaries.
 published: 2026-08-19
-updated: 2026-10-30
+updated: 2026-11-16
 applies_to: SPM public releases
 ---
 
 # Changelog
 
 This page records dated public changes. Historical entries describe the behavior announced at the time, not a current performance guarantee.
+
+## 2026-11-16 — Model discovery and long-context budget guidance
+
+- **Hosted `GET /v1/models` is available.** It requires an SPM key and returns only
+  the models configured on the active provider channel, not the provider's full
+  upstream catalog. It is not a claim that every provider supports discovery.
+- **Input budgets are now documented as starting points.** They are thresholds for
+  considering safe removal, not a promise to compress a large transcript. Long
+  requests can be forwarded intact when nothing eligible can be removed or when the
+  provider already holds a reusable cached prefix.
 
 ## 2026-10-30 — Documentation navigation and readability
 

@@ -2,7 +2,7 @@
 title: Provider proxy API
 description: SPM Hosted Provider Proxy API endpoints, native request dialects, memory and compression modes, response headers, receipts, and errors.
 published: 2026-08-19
-updated: 2026-10-20
+updated: 2026-11-16
 applies_to: SPM-Polaris
 ---
 
@@ -21,6 +21,11 @@ Hosted model endpoints authenticate with `Authorization: Bearer spm_live_...`; A
 | `POST /v1/chat/completions` | OpenAI Chat Completions |
 | `POST /v1/responses` | OpenAI Responses |
 | `POST /v1/messages` | Anthropic Messages |
+| `GET /v1/models` | OpenAI-compatible provider model discovery |
+
+`GET /v1/models` is an authenticated read. It returns only models that map to the
+credential selected by the request's configured provider channel; it does not expose
+the provider's unrelated catalog. It is unavailable for Anthropic-style channels.
 
 Provider responses are relayed as JSON or SSE in their native dialect. Memory injection and compression can change the outgoing request; this is not a promise of byte-identical request forwarding.
 
@@ -58,6 +63,28 @@ x-spm-compression-mode: passthrough | shadow | deterministic
 Memory and compression are independent: you can save and recall memory without shortening anything, or measure compression without saving.
 
 Set account defaults in **Settings → Proxy**: compression mode, input budget, and maximum recalled context. A per-request header still overrides them for a single request.
+
+### Choosing an input budget
+
+The input budget is the point at which SPM may consider shortening eligible older
+history; it is not a promise to shrink every request to that size. Start with a
+budget that matches the task and the provider's context window:
+
+| Request shape | Starting budget |
+|---|---:|
+| Short chat, latency-sensitive | 8K–16K |
+| Normal coding or tool-using agent | 16K–32K |
+| Tool-heavy or long-running task | 32K–64K |
+| Very long continuous session | 64K–128K |
+| 300K–500K original transcript | Stress/special-case testing; verify the provider window and measure the result |
+
+These are starting points, not promises of compression or a production traffic
+distribution. A very large original transcript can be forwarded successfully when it
+fits the provider's window, but that does not mean SPM found safely removable history
+or that the provider charge fell. Choose a larger budget only when the task needs it,
+and evaluate forwarded tokens, latency, provider cache behavior, and task success
+together. `Settings → Proxy` is the account-level control; `x-spm-compression-mode`
+can change the treatment for one request but cannot force an ineligible removal.
 
 ## Why a receipt can show 0%
 
