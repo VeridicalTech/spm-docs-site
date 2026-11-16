@@ -21,11 +21,12 @@ Hosted model endpoints authenticate with `Authorization: Bearer spm_live_...`; A
 | `POST /v1/chat/completions` | OpenAI Chat Completions |
 | `POST /v1/responses` | OpenAI Responses |
 | `POST /v1/messages` | Anthropic Messages |
-| `GET /v1/models` | OpenAI-compatible provider model discovery |
 
-`GET /v1/models` is an authenticated read. It returns only models that map to the
-credential selected by the request's configured provider channel; it does not expose
-the provider's unrelated catalog. It is unavailable for Anthropic-style channels.
+The hosted proxy API does not expose a model-discovery endpoint. Model selection is
+configured per provider channel: preset providers carry a fixed catalog, and Custom
+channels can run the console's guarded **Fetch models** probe. See
+[provider configuration](providers.html). A `GET /v1/models` route belongs to
+[Local Proxy](local-proxy.html), which talks to your own upstream, not to this API.
 
 Provider responses are relayed as JSON or SSE in their native dialect. Memory injection and compression can change the outgoing request; this is not a promise of byte-identical request forwarding.
 

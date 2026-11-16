@@ -10,11 +10,20 @@ applies_to: SPM public releases
 
 This page records dated public changes. Historical entries describe the behavior announced at the time, not a current performance guarantee.
 
-## 2026-11-16 — Model discovery and long-context budget guidance
+## 2026-11-17 — Correction: hosted model discovery is not available
 
-- **Hosted `GET /v1/models` is available.** It requires an SPM key and returns only
-  the models configured on the active provider channel, not the provider's full
-  upstream catalog. It is not a claim that every provider supports discovery.
+**Withdrawn claim.** The 2026-11-16 entry said the hosted `GET /v1/models`
+endpoint was available. It is not: the hosted proxy API has no model-discovery
+route, and `GET https://api.spmos.ai/v1/models` returns `404`. The endpoint is
+removed from the [Provider proxy API](proxy-api.html) table.
+
+**What is supported instead.** Model selection stays per provider channel:
+preset catalogs in **Settings → Providers**, and the console's guarded **Fetch
+models** probe for Custom channels. Local Proxy keeps its own loopback
+`GET /v1/models` for the upstream you configure.
+
+## 2026-11-16 — Long-context budget guidance
+
 - **Input budgets are now documented as starting points.** They are thresholds for
   considering safe removal, not a promise to compress a large transcript. Long
   requests can be forwarded intact when nothing eligible can be removed or when the

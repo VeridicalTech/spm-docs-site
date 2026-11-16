@@ -111,9 +111,10 @@ isolated partition, exercises the whole tool surface, checks the verdict rules,
 and deletes the canary:
 
 ```bash
+curl -fsSLO https://docs.spmos.ai/assets/mcp-conformance.py
 export SPM_API_KEY=spm_live_...
-python3 tools/mcp/conformance.py           # human scorecard
-python3 tools/mcp/conformance.py --json    # CI output; exits 1 on a break
+python3 mcp-conformance.py           # human scorecard
+python3 mcp-conformance.py --json    # CI output; exits 1 on a break
 ```
 
 Contract checks must pass; capability observations (how a paraphrased question

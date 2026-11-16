@@ -332,7 +332,7 @@ def main() -> None:
         shutil.rmtree(DIST)
     (DIST / "assets").mkdir(parents=True)
 
-    for name in ("site.css", "site.js", "social-icons.svg"):
+    for name in ("site.css", "site.js", "social-icons.svg", "mcp-conformance.py"):
         shutil.copy(ROOT / "assets" / name, DIST / "assets" / name)
     for name in (
         "orbit-favicon-64.webp",

@@ -118,8 +118,9 @@ Or run the conformance probe, which performs the same round trip plus the
 verdict checks and cleans up after itself:
 
 ```bash
+curl -fsSLO https://docs.spmos.ai/assets/mcp-conformance.py
 export SPM_API_KEY=spm_live_...
-python3 tools/mcp/conformance.py
+python3 mcp-conformance.py
 ```
 
 It exits non-zero if any contract check fails, so the same command works as a
