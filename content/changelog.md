@@ -1,26 +1,14 @@
 ---
 title: Changelog
-description: Dated public changes to SPM interfaces, behavior, documentation, and supported integration boundaries.
+description: Dated public changes to SPM interfaces, behavior, and supported integration boundaries.
 published: 2026-08-19
-updated: 2026-11-16
+updated: 2026-11-17
 applies_to: SPM public releases
 ---
 
 # Changelog
 
 This page records dated public changes. Historical entries describe the behavior announced at the time, not a current performance guarantee.
-
-## 2026-11-17 — Correction: hosted model discovery is not available
-
-**Withdrawn claim.** The 2026-11-16 entry said the hosted `GET /v1/models`
-endpoint was available. It is not: the hosted proxy API has no model-discovery
-route, and `GET https://api.spmos.ai/v1/models` returns `404`. The endpoint is
-removed from the [Provider proxy API](proxy-api.html) table.
-
-**What is supported instead.** Model selection stays per provider channel:
-preset catalogs in **Settings → Providers**, and the console's guarded **Fetch
-models** probe for Custom channels. Local Proxy keeps its own loopback
-`GET /v1/models` for the upstream you configure.
 
 ## 2026-11-16 — Long-context budget guidance
 
@@ -29,15 +17,10 @@ models** probe for Custom channels. Local Proxy keeps its own loopback
   requests can be forwarded intact when nothing eligible can be removed or when the
   provider already holds a reusable cached prefix.
 
-## 2026-10-30 — Documentation navigation and readability
+## 2026-10-30 — Retired reference pages
 
-- Every remaining page is reachable from the sidebar. Integration selection and
-  the Python SDK guide are now listed under Start and Guides.
-- Retired five reference pages: Compare, Security, Roadmap, Official
-  definitions, and Technical report. Their earlier URLs no longer resolve.
-- Added a skip link, visible keyboard focus, larger navigation targets,
-  anchored-heading offsets, and copy buttons that keep keyboard focus and
-  announce success or failure.
+Five reference pages were retired: Compare, Security, Roadmap, Official
+definitions, and Technical report. Their earlier URLs no longer resolve.
 
 ## 2026-10-30 — Long-context safety and reversible fold economics
 
@@ -89,12 +72,6 @@ models** probe for Custom channels. Local Proxy keeps its own loopback
 - **Plan prices changed**: Starter is now \$29/month (\$290/year) and Growth \$99/month (\$990/year). Annual billing is two months free. Existing subscriptions keep the price they were sold at until their plan is changed.
 - **Recalls past the allowance are metered.** Starter includes 5,000 recalls per month and Growth 50,000; beyond that, recalls bill at **\$2 per 1,000**, on the same invoice as the plan. Free plan recall is capped and never metered.
 - **A failed renewal no longer drops the plan instantly.** The paid plan stays active for three days past the period end while the card is retried.
-
-## 2026-10-20 — Documentation reconciliation
-
-- Clarified the relationship between **SPMOS** (the master brand), **SPM** (the short form), and **SPM-Polaris** (the current production product), together with existing integration and credential boundaries.
-- Reconciled documentation with verified existing interfaces, including MCP evidence reads by source ID, compatibility tools, and bounded tool-output stubs on the Responses path. These are documentation clarifications, not claims that those interfaces first shipped today.
-- Clarified that eligible tool results can be captured, while tool-call arguments, reasoning, and signatures are excluded. A failed save is not guaranteed to retry, and readiness guards are not a losslessness guarantee.
 
 ## 2026-09-11
 
