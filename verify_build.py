@@ -125,6 +125,46 @@ def main() -> None:
                 "faq.html: incomplete FAQPage question or answer",
             )
 
+        if slug == "official-definitions":
+            # The defined-term set is the machine-readable anchor answer
+            # engines cite. Losing it silently would leave the page visible
+            # but structurally useless for entity verification.
+            term_sets = [
+                node
+                for item in parsed
+                if isinstance(item, dict)
+                for node in (
+                    [item]
+                    if item.get("@type") == "DefinedTermSet"
+                    else item.get("@graph", [])
+                )
+                if isinstance(node, dict) and node.get("@type") == "DefinedTermSet"
+            ]
+            require(
+                len(term_sets) == 1,
+                "official-definitions.html: expected exactly one DefinedTermSet",
+            )
+            defined = term_sets[0].get("hasDefinedTerm", [])
+            names = {term.get("name") for term in defined}
+            require(
+                {"SPMOS", "SPM", "SPM-Polaris", "SPMOS.ai"} <= names,
+                f"official-definitions.html: missing defined terms {sorted(names)}",
+            )
+            require(
+                all(
+                    term.get("@type") == "DefinedTerm"
+                    and term.get("name")
+                    and term.get("description")
+                    for term in defined
+                ),
+                "official-definitions.html: incomplete DefinedTerm entry",
+            )
+            require(
+                "StellarPath Memory Operating System"
+                in json.dumps(defined, ensure_ascii=False),
+                "official-definitions.html: SPMOS expansion missing from term set",
+            )
+
         titles.add(title)
         descriptions.add(description)
         canonicals.add(canonical)
@@ -219,8 +259,19 @@ def main() -> None:
             if target == "assets":
                 continue
             require(target in slugs, f"{output.name}: link to missing page /{target}")
-    for removed in ("security", "compare", "roadmap", "official-definitions", "technical-report"):
-        require(removed not in slugs, f"removed page still present in inventory: {removed}")
+    # The official definitions, security, and technical-report pages were
+    # retired in the 2026-10-30 navigation rebuild, but every first-party
+    # surface (llms.txt, GitHub, Hugging Face, veridicaltech.com, the claim
+    # registry) still points at them. They are published again so those
+    # citations resolve and so answer engines can verify the entity
+    # definitions they are asked to quote.
+    for restored in ("official-definitions", "security", "technical-report"):
+        require(restored in slugs, f"restored page missing from inventory: {restored}")
+    for still_removed in ("compare", "roadmap"):
+        require(
+            still_removed not in slugs,
+            f"removed page still present in inventory: {still_removed}",
+        )
     require('main id="main-content" class="content" tabindex="-1"' in sidebar_sample, "skip target missing")
 
     # Assets are content-addressed so HTML and CSS cannot desynchronise across
